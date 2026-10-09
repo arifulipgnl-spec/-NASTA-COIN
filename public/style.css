@@ -1880,44 +1880,6 @@ body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 229, 255, 0.15);
 }
 
-.video-overlay-header {
-  position: absolute;
-  top: 18px;
-  left: 16px;
-  right: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10;
-}
-
-.intro-ctrl-btn {
-  background: rgba(14, 21, 38, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.intro-ctrl-btn:active {
-  transform: scale(0.92);
-}
-
-.skip-btn {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.35), rgba(139, 92, 246, 0.35));
-  border-color: var(--border-glow-cyan);
-  color: #ffffff;
-  box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
-}
 
 .video-overlay-footer {
   position: absolute;

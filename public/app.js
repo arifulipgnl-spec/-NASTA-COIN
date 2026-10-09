@@ -1287,13 +1287,9 @@
     });
   });
 
-    // --- Video Opening Intro Controller ---
+    // --- Video Opening Intro Controller (Full Sound, Clean Cinema Mode) ---
     const splashScreen = document.getElementById('splashScreen');
     const introVideo = document.getElementById('introVideo');
-    const toggleAudioBtn = document.getElementById('toggleAudioBtn');
-    const audioIcon = document.getElementById('audioIcon');
-    const audioText = document.getElementById('audioText');
-    const skipIntroBtn = document.getElementById('skipIntroBtn');
     const splashProgressFill = document.getElementById('splashProgressFill');
     const splashStatusText = document.getElementById('splashStatusText');
     const splashPercentText = document.getElementById('splashPercentText');
@@ -1315,27 +1311,23 @@
       }
     }
 
-    // Toggle Audio
-    if (toggleAudioBtn && introVideo) {
-      toggleAudioBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        introVideo.muted = !introVideo.muted;
-        if (audioIcon) audioIcon.textContent = introVideo.muted ? '🔇' : '🔊';
-        if (audioText) audioText.textContent = introVideo.muted ? 'Unmute' : 'Mute';
-        triggerHaptic('selection');
-      });
-    }
-
-    // Skip Button
-    if (skipIntroBtn) {
-      skipIntroBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        finishIntro();
+    // Optional quick tap to proceed if user touches the video screen
+    if (splashScreen) {
+      splashScreen.addEventListener('click', () => {
+        // Unmute if muted, or finish intro on tap
+        if (introVideo && introVideo.muted) {
+          introVideo.muted = false;
+        } else {
+          finishIntro();
+        }
       });
     }
 
     // Video Playback Events
     if (introVideo) {
+      introVideo.muted = false;
+      introVideo.volume = 1.0;
+
       introVideo.addEventListener('ended', () => {
         finishIntro();
       });
@@ -1354,10 +1346,24 @@
         }
       });
 
-      // Try autoplay
-      introVideo.play().catch((err) => {
-        console.log('Video autoplay note:', err);
-      });
+      // Autoplay with sound
+      const playPromise = introVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.log('Unmuted autoplay policy fallback:', err);
+          // If browser restricts unmuted autoplay, start muted and unmute on first screen touch
+          introVideo.muted = true;
+          introVideo.play().then(() => {
+            const unmuteOnGesture = () => {
+              if (introVideo) introVideo.muted = false;
+              window.removeEventListener('click', unmuteOnGesture);
+              window.removeEventListener('touchstart', unmuteOnGesture);
+            };
+            window.addEventListener('click', unmuteOnGesture, { once: true });
+            window.addEventListener('touchstart', unmuteOnGesture, { once: true });
+          }).catch(e => console.warn(e));
+        });
+      }
 
       // Safety timeout so user is never stuck
       setTimeout(() => {
