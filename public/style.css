@@ -1879,7 +1879,72 @@ body {
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 229, 255, 0.15);
 }
+/* Sound Unlock Overlay (Used when mobile browser blocks unmuted autoplay) */
+.sound-unlock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 25;
+  background: rgba(7, 10, 18, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  cursor: pointer;
+  animation: fadeIn 0.3s ease;
+}
 
+.sound-unlock-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 32px;
+  background: rgba(14, 21, 38, 0.92);
+  border: 1.5px solid rgba(0, 229, 255, 0.6);
+  border-radius: 24px;
+  box-shadow: 0 0 35px rgba(0, 229, 255, 0.4);
+  pointer-events: none;
+  animation: pulseCard 2s infinite ease-in-out;
+}
+
+.sound-pulse-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(245, 158, 11, 0.25));
+  border: 2px solid var(--primary-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+  animation: pulseGlow 1.8s infinite alternate;
+}
+
+.sound-speaker-icon {
+  font-size: 28px;
+}
+
+.sound-unlock-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.sound-unlock-sub {
+  font-size: 12px;
+  color: var(--primary-cyan);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+@keyframes pulseCard {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); box-shadow: 0 0 45px rgba(0, 229, 255, 0.55); }
+}
 
 .video-overlay-footer {
   position: absolute;
