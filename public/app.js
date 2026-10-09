@@ -107,10 +107,81 @@
     if (state.energy > 30) state.energy = 30;
   }
 
+  let cloudSaveTimeout = null;
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {}
+
+    // Cloud sync with Telegram CloudStorage across all user devices (Phone, PC, Web)
+    if (tg?.CloudStorage) {
+      if (cloudSaveTimeout) clearTimeout(cloudSaveTimeout);
+      cloudSaveTimeout = setTimeout(() => {
+        try {
+          const serialized = JSON.stringify(state);
+          tg.CloudStorage.setItem(STORAGE_KEY, serialized, (err, stored) => {
+            if (err) console.warn('Telegram CloudStorage setItem notice:', err);
+          });
+        } catch (e) {}
+      }, 500);
+    }
+  }
+
+  function syncCloudStorage() {
+    if (!tg?.CloudStorage) return;
+    try {
+      tg.CloudStorage.getItem(STORAGE_KEY, (err, value) => {
+        if (!err && value) {
+          try {
+            const cloudState = JSON.parse(value);
+            if (cloudState && typeof cloudState.balance === 'number') {
+              let updated = false;
+
+              // Adopt higher balance so user never loses earned coins across devices
+              if (cloudState.balance > state.balance) {
+                state.balance = cloudState.balance;
+                updated = true;
+              } else if (state.balance > cloudState.balance) {
+                saveState();
+              }
+
+              if ((cloudState.miningSpeedPerHour || 0) > (state.miningSpeedPerHour || 0)) {
+                state.miningSpeedPerHour = cloudState.miningSpeedPerHour;
+                updated = true;
+              }
+              if ((cloudState.currentStreak || 0) > (state.currentStreak || 0)) {
+                state.currentStreak = cloudState.currentStreak;
+                state.lastStreakClaimTime = cloudState.lastStreakClaimTime;
+                updated = true;
+              }
+              if (Array.isArray(cloudState.completedTasks) && cloudState.completedTasks.length > state.completedTasks.length) {
+                state.completedTasks = Array.from(new Set([...state.completedTasks, ...cloudState.completedTasks]));
+                updated = true;
+              }
+              if (cloudState.connectedTonWallet && !state.connectedTonWallet) {
+                state.connectedTonWallet = cloudState.connectedTonWallet;
+                updated = true;
+              }
+
+              if (updated) {
+                try {
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                } catch(e) {}
+                updateUI();
+                if (typeof renderTasks === 'function') renderTasks();
+              }
+            }
+          } catch (e) {
+            console.warn('Telegram CloudStorage parse notice:', e);
+          }
+        } else if (!value && state.balance > 0) {
+          // First time opening with local progress, push to cloud
+          saveState();
+        }
+      });
+    } catch (e) {
+      console.warn('Telegram CloudStorage init notice:', e);
+    }
   }
 
   // --- Task Definitions ---
@@ -1301,6 +1372,7 @@
     // Initial Run
     renderTasks();
     updateUI();
+    syncCloudStorage();
 
   })();
 
