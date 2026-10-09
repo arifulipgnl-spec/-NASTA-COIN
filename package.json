@@ -1,0 +1,25 @@
+{
+  "name": "nasta-coin-telegram-mini-app",
+  "version": "1.0.0",
+  "description": "NASTA Coin ($NASTA) Telegram Mini App and Bot on TON Blockchain",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "node bot.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "keywords": [
+    "telegram-mini-app",
+    "telegram-bot",
+    "ton-blockchain",
+    "nasta-coin",
+    "tap-to-earn"
+  ],
+  "author": "NASTA Ecosystem",
+  "license": "MIT"
+}

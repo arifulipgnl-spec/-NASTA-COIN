@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NASTA Coin - TON Cryptocurrency Mini App</title>
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <!-- Adsgram SDK for Telegram Mini App Rewarded Ads -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Favicon / App Icon -->
+  <link rel="icon" type="image/png" href="assets/coin.png">
+  <link rel="apple-touch-icon" href="assets/coin.png">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    
+    <!-- ==================== VIDEO OPENING INTRO / SPLASH SCREEN ==================== -->
+    <div id="splashScreen" class="splash-screen video-intro-screen">
+      <video id="introVideo" class="intro-video" autoplay muted playsinline webkit-playsinline preload="auto">
+        <source src="assets/intro.mp4" type="video/mp4">
+      </video>
+
+      <!-- Video Header Controls -->
+      <div class="video-overlay-header">
+        <button id="toggleAudioBtn" class="intro-ctrl-btn" title="Toggle Sound">
+          <span id="audioIcon">🔇</span> <span id="audioText">Unmute</span>
+        </button>
+        <button id="skipIntroBtn" class="intro-ctrl-btn skip-btn">
+          <span>Skip</span> ➔
+        </button>
+      </div>
+
+      <!-- Bottom Progress Overlay -->
+      <div class="video-overlay-footer">
+        <div class="splash-loader-box">
+          <div class="splash-progress-track">
+            <div id="splashProgressFill" class="splash-progress-fill"></div>
+          </div>
+          <div class="splash-status-row">
+            <span id="splashStatusText" class="splash-status-text">Entering NASTA Universe...</span>
+            <span id="splashPercentText" class="splash-percent-text">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Telegram Header -->
+    <header class="app-header">
+      <div class="user-pill" id="userPill">
+        <div class="avatar-circle" id="userAvatar">
+          <img src="assets/coin.png" class="avatar-img" alt="NASTA Logo">
+        </div>
+        <div class="user-meta">
+          <span class="username" id="usernameDisplay">@nasta_pioneer</span>
+          <span class="user-league-badge" id="headerLeagueBadge">Bronze Stage</span>
+        </div>
+      </div>
+
+      <div class="header-badges">
+        <div class="token-chip">
+          <img src="assets/coin.png" class="chip-coin-icon" alt="NASTA">
+          <span>$NASTA</span>
+          <span class="verified-dot">✓</span>
+        </div>
+        <button class="icon-btn" id="hapticToggleBtn" title="Toggle Haptics">
+          <span class="icon" id="hapticIcon">📳</span>
+        </button>
+        <button class="icon-btn notif-btn" id="notifBtn" title="Notifications">
+          <span class="icon">🔔</span>
+          <span class="notif-badge" id="notifBadge">1</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Panels -->
+    <main class="app-content">
+
+      <!-- ==================== TAB 1: TAP SCREEN ==================== -->
+      <section id="tab-tap" class="tab-panel active">
+        <!-- Balance Display -->
+        <div class="balance-card">
+          <div class="balance-label">TOTAL BALANCE</div>
+          <div class="balance-amount-wrapper">
+            <img src="assets/coin.png" class="balance-coin-svg" alt="NASTA">
+            <span class="balance-number" id="balanceDisplay">0</span>
+            <span class="balance-symbol">$NASTA</span>
+          </div>
+          <div class="balance-sub">
+            <span class="usd-value" id="balanceUsdDisplay">≈ $0.00 USD</span>
+            <span class="price-chip">1 $NASTA = $0.024 USDT</span>
+          </div>
+        </div>
+
+        <!-- League & Level Bar -->
+        <div class="league-progress-card" id="leagueCard">
+          <div class="league-info">
+            <div class="league-name" id="currentLeagueName">Bronze Pioneer</div>
+            <div class="league-fraction"><span id="leagueCurrentPoints">0</span> / <span id="leagueMaxPoints">5,000</span></div>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="leagueProgressFill" style="width: 5%"></div>
+          </div>
+        </div>
+
+        <!-- Central Coin Tapping Arena -->
+        <div class="coin-tap-arena" id="tapArena">
+          <div class="coin-glow-halo" id="coinGlow"></div>
+          <div class="coin-wrapper" id="coinWrapper">
+            <img src="assets/coin.png" id="nastaCoin" class="interactive-coin" alt="Tap NASTA Coin" draggable="false">
+            <!-- Cooldown Overlay -->
+            <div id="coinCooldownOverlay" class="coin-cooldown-overlay" style="display: none;">
+              <span class="cd-hourglass">⏳</span>
+              <strong id="coinCdTimer">30:00</strong>
+              <small>Cooldown Active</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Energy & Boost Bar -->
+        <div class="energy-card" id="energyCard">
+          <div class="energy-info">
+            <span class="energy-icon" id="energyIcon">⚡</span>
+            <span class="energy-text"><strong id="energyText">30</strong> / <span id="maxEnergyText">30</span></span>
+          </div>
+          <div class="energy-track">
+            <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+          </div>
+          <div class="cooldown-badge" id="cooldownBadge" style="display: none;">
+            <span>⏳</span> <strong id="cooldownTimerText">30:00</strong>
+          </div>
+          <button class="boost-chip" id="watchAdQuickBtn" style="background: rgba(2, 132, 199, 0.25); border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;">
+            <span>📺</span> +5 Ad
+          </button>
+          <button class="boost-chip" id="turboBoostBtn">
+            <span>🔥</span> Boost
+          </button>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: MINING SCREEN ==================== -->
+      <section id="tab-mining" class="tab-panel">
+        <!-- Turbine Live Status Card -->
+        <div class="mining-rig-card">
+          <div class="turbine-visual">
+            <div class="turbine-outer-ring">
+              <div class="turbine-blades" id="turbineBlades">
+                <div class="blade blade-1"></div>
+                <div class="blade blade-2"></div>
+                <div class="blade blade-3"></div>
+                <div class="blade blade-4"></div>
+              </div>
+              <div class="turbine-core">
+                <img src="assets/coin.png" class="core-logo" alt="NASTA">
+              </div>
+            </div>
+          </div>
+
+          <div class="rig-details">
+            <div class="rig-title-row">
+              <h3>NASTA Cloud Mining Rig</h3>
+              <span class="rig-status-pill" id="miningStatusPill">Active</span>
+            </div>
+            <p class="rig-desc">Continuous 24-hour mining directly on TON Blockchain infrastructure.</p>
+            
+            <div class="rig-stats-grid">
+              <div class="rig-stat-box">
+                <span class="stat-caption">Current Speed</span>
+                <span class="stat-highlight" id="miningSpeedDisplay">+0 / hr</span>
+              </div>
+              <div class="rig-stat-box">
+                <span class="stat-caption">Total Mined</span>
+                <span class="stat-highlight" id="totalMinedDisplay">0 $NASTA</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary claim-mining-btn" id="claimMiningBtn">
+              <span>⚡</span> Claim Hourly Yield
+            </button>
+          </div>
+        </div>
+
+        <!-- Official Tonkeeper Address Notice -->
+        <div class="treasury-card">
+          <div class="treasury-header">
+            <div class="treasury-badge">💎 Official TON Receiver</div>
+            <span class="verified-tag">Verified On-Chain</span>
+          </div>
+          <p class="treasury-info">All mining upgrades and deposits route to the official Tonkeeper wallet:</p>
+          <div class="address-copy-box">
+            <code class="ton-address" id="ownerAddressText">UQCEkkk4CCNo48fudDqX12UDxnSehnEHd-UFWzP5zH9w-hIT</code>
+            <button class="copy-icon-btn" id="copyAddressBtn" title="Copy Address">📋</button>
+          </div>
+        </div>
+
+        <!-- Mining Upgrades List -->
+        <div class="section-title">
+          <h3>Purchase Mining Speed (USDT / TON)</h3>
+          <p>Boost your passive hourly mining yield permanently</p>
+        </div>
+
+        <div class="plans-list">
+          <!-- Plan 1 -->
+          <div class="plan-card" data-plan="NORMAL">
+            <div class="plan-header">
+              <div class="plan-icon plan-cyan">⚡</div>
+              <div class="plan-title-block">
+                <h4>Normal Speed</h4>
+                <span class="plan-badge badge-cyan">Starter Tier</span>
+              </div>
+              <div class="plan-price">
+                <strong>1.0 USDT</strong>
+                <small>≈ 0.182 TON</small>
+              </div>
+            </div>
+            <div class="plan-metrics">
+              <div class="metric"><strong>+50</strong> $NASTA / hr</div>
+              <div class="metric"><strong>1,200</strong> / 24 hours</div>
+              <div class="metric owned">Owned: <span id="normalOwnedCount">0</span></div>
+            </div>
+            <button class="btn btn-outline buy-plan-btn" data-plan="NORMAL" data-price="1.0" data-ton="0.182" data-speed="50">
+              Upgrade with Tonkeeper
+            </button>
+          </div>
+
+          <!-- Plan 2 -->
+          <div class="plan-card popular" data-plan="HIGH">
+            <div class="plan-popular-ribbon">🔥 Popular Tier</div>
+            <div class="plan-header">
+              <div class="plan-icon plan-purple">🚀</div>
+              <div class="plan-title-block">
+                <h4>High Speed</h4>
+                <span class="plan-badge badge-purple">Advanced Miner</span>
+              </div>
+              <div class="plan-price">
+                <strong>2.0 USDT</strong>
+                <small>≈ 0.364 TON</small>
+              </div>
+            </div>
+            <div class="plan-metrics">
+              <div class="metric"><strong>+100</strong> $NASTA / hr</div>
+              <div class="metric"><strong>2,400</strong> / 24 hours</div>
+              <div class="metric owned">Owned: <span id="highOwnedCount">0</span></div>
+            </div>
+            <button class="btn btn-primary buy-plan-btn" data-plan="HIGH" data-price="2.0" data-ton="0.364" data-speed="100">
+              Upgrade with Tonkeeper
+            </button>
+          </div>
+
+          <!-- Plan 3 -->
+          <div class="plan-card" data-plan="ULTRA">
+            <div class="plan-header">
+              <div class="plan-icon plan-emerald">💎</div>
+              <div class="plan-title-block">
+                <h4>Ultra Power</h4>
+                <span class="plan-badge badge-emerald">Max Power</span>
+              </div>
+              <div class="plan-price">
+                <strong>4.0 USDT</strong>
+                <small>≈ 0.728 TON</small>
+              </div>
+            </div>
+            <div class="plan-metrics">
+              <div class="metric"><strong>+200</strong> $NASTA / hr</div>
+              <div class="metric"><strong>4,800</strong> / 24 hours</div>
+              <div class="metric owned">Owned: <span id="ultraOwnedCount">0</span></div>
+            </div>
+            <button class="btn btn-outline buy-plan-btn" data-plan="ULTRA" data-price="4.0" data-ton="0.728" data-speed="200">
+              Upgrade with Tonkeeper
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: TASKS SCREEN ==================== -->
+      <section id="tab-tasks" class="tab-panel">
+        <!-- Daily Streak Banner -->
+        <div class="streak-hero-card">
+          <div class="streak-icon-wrap">🔥</div>
+          <div class="streak-text">
+            <h3>7-Day Check-in Streak</h3>
+            <p>Claim increasing rewards every 24 hours without breaking your streak!</p>
+          </div>
+          <button class="btn btn-sm btn-gold" id="openStreakModalBtn">Open Streak</button>
+        </div>
+
+        <!-- Task Groups -->
+        <div class="section-title">
+          <h3>Daily Quests & Bounties</h3>
+          <p>Complete tasks to earn instant $NASTA tokens</p>
+        </div>
+
+        <div class="tasks-list" id="tasksListContainer">
+          <!-- Dynamically populated via app.js -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: REFERRALS SCREEN ==================== -->
+      <section id="tab-referrals" class="tab-panel">
+        <div class="referral-hero">
+          <img src="assets/bot.png" class="ref-hero-img" alt="NASTA Frens">
+          <h2>Invite Frens & Earn Big</h2>
+          <p>You and your fren will receive bonus $NASTA instantly upon joining.</p>
+        </div>
+
+        <div class="ref-reward-cards">
+          <div class="ref-card">
+            <div class="ref-icon">👥</div>
+            <div class="ref-card-info">
+              <h4>Standard Fren</h4>
+              <p>+5,000 $NASTA for both</p>
+            </div>
+            <span class="ref-bonus-tag">+5K</span>
+          </div>
+
+          <div class="ref-card premium">
+            <div class="ref-icon">⭐</div>
+            <div class="ref-card-info">
+              <h4>Telegram Premium</h4>
+              <p>+25,000 $NASTA for both</p>
+            </div>
+            <span class="ref-bonus-tag premium-tag">+25K</span>
+          </div>
+        </div>
+
+        <!-- Invite Link Box -->
+        <div class="ref-link-box">
+          <span class="ref-label">YOUR INVITATION LINK</span>
+          <div class="link-field-row">
+            <input type="text" id="referralLinkInput" readonly value="https://t.me/NASTA_Coin_bot?start=ref_8821X">
+            <button class="btn btn-primary" id="copyRefBtn">Copy</button>
+          </div>
+          <button class="btn btn-accent btn-full" id="shareTelegramBtn">
+            <span>🚀</span> Send to Fren on Telegram
+          </button>
+        </div>
+
+        <!-- Frens Count -->
+        <div class="frens-summary">
+          <div class="summary-item">
+            <span>Total Frens</span>
+            <strong id="totalFrensCount">0</strong>
+          </div>
+          <div class="summary-item">
+            <span>Earned from Frens</span>
+            <strong id="totalFrenRewards">0 $NASTA</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: LEADERBOARD ==================== -->
+      <section id="tab-leaderboard" class="tab-panel">
+        <div class="leaderboard-podium">
+          <div class="podium-item second">
+            <div class="podium-rank">2</div>
+            <div class="podium-avatar">🥈</div>
+            <div class="podium-name">@ton_crypto_king</div>
+            <div class="podium-score">185,400</div>
+          </div>
+          <div class="podium-item first">
+            <div class="podium-crown">👑</div>
+            <div class="podium-rank">1</div>
+            <div class="podium-avatar">🥇</div>
+            <div class="podium-name">@nasta_whale</div>
+            <div class="podium-score">340,920</div>
+          </div>
+          <div class="podium-item third">
+            <div class="podium-rank">3</div>
+            <div class="podium-avatar">🥉</div>
+            <div class="podium-name">@pavel_ton</div>
+            <div class="podium-score">142,100</div>
+          </div>
+        </div>
+
+        <div class="user-rank-floating" id="myRankBar">
+          <div class="rank-num">#1,420</div>
+          <div class="rank-name">You (@nasta_pioneer)</div>
+          <div class="rank-points" id="myRankScore">0 $NASTA</div>
+        </div>
+
+        <div class="leaderboard-list" id="leaderboardList">
+          <!-- Dynamically populated via app.js -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB 6: WALLET SCREEN ==================== -->
+      <section id="tab-wallet" class="tab-panel">
+        <!-- TON Wallet Connect Banner -->
+        <div class="wallet-connect-card" id="walletCard">
+          <div class="wallet-badge">💎 TON Blockchain Network</div>
+          <h3 id="walletStatusTitle">Connect TON Crypto Wallet</h3>
+          <p id="walletStatusDesc">Connect your Tonkeeper, Telegram @wallet or MyTonWallet to prepare for $NASTA token airdrop & withdrawal.</p>
+          <button class="btn btn-primary" id="connectWalletBtn">
+            <span>🔗</span> Connect Tonkeeper
+          </button>
+        </div>
+
+        <!-- Balances Grid -->
+        <div class="crypto-balances-grid">
+          <div class="crypto-box">
+            <div class="crypto-header">
+              <img src="assets/coin.png" class="crypto-icon" alt="NASTA">
+              <span>$NASTA</span>
+            </div>
+            <div class="crypto-val" id="walletNastaBalance">0</div>
+            <small class="crypto-usd" id="walletNastaUsd">≈ $0.00</small>
+          </div>
+
+          <div class="crypto-box">
+            <div class="crypto-header">
+              <span class="crypto-emoji">💎</span>
+              <span>TON</span>
+            </div>
+            <div class="crypto-val" id="walletTonBalance">0.00</div>
+            <small class="crypto-usd">1 TON ≈ $5.50</small>
+          </div>
+
+          <div class="crypto-box">
+            <div class="crypto-header">
+              <span class="crypto-emoji">💵</span>
+              <span>USDT</span>
+            </div>
+            <div class="crypto-val" id="walletUsdtBalance">0.00</div>
+            <small class="crypto-usd">Tether USD</small>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="wallet-actions-row">
+          <button class="wallet-action-btn" id="sendBtn">
+            <span class="action-icon">↗️</span>
+            <span>Send</span>
+          </button>
+          <button class="wallet-action-btn" id="receiveBtn">
+            <span class="action-icon">↙️</span>
+            <span>Receive</span>
+          </button>
+          <button class="wallet-action-btn" id="swapBtn">
+            <span class="action-icon">🔄</span>
+            <span>Swap</span>
+          </button>
+          <button class="wallet-action-btn" id="withdrawBtn">
+            <span class="action-icon">🏦</span>
+            <span>Withdraw</span>
+          </button>
+        </div>
+
+        <!-- Multi-Sig Security Vault Card -->
+        <div class="multisig-card">
+          <div class="multisig-top">
+            <div class="vault-icon">🛡️</div>
+            <div>
+              <h4>Multi-Signature Vault Active</h4>
+              <p>2-of-3 signatures threshold protection against unauthorized transfers.</p>
+            </div>
+          </div>
+          <div class="multisig-key-row">
+            <span>Guardian Key:</span>
+            <code>0x98A1...F33D (NASTA Sentinel)</code>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="tab-tap">
+        <span class="nav-icon">🪙</span>
+        <span class="nav-label">Tap</span>
+      </button>
+      <button class="nav-item" data-tab="tab-mining">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Mining</span>
+      </button>
+      <button class="nav-item" data-tab="tab-tasks">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Tasks</span>
+      </button>
+      <button class="nav-item" data-tab="tab-referrals">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Frens</span>
+      </button>
+      <button class="nav-item" data-tab="tab-leaderboard">
+        <span class="nav-icon">🏆</span>
+        <span class="nav-label">Ranks</span>
+      </button>
+      <button class="nav-item" data-tab="tab-wallet">
+        <span class="nav-icon">💼</span>
+        <span class="nav-label">Wallet</span>
+      </button>
+    </nav>
+
+    <!-- ==================== MODALS & DIALOGS ==================== -->
+
+    <!-- Tonkeeper Payment Modal -->
+    <div class="modal-overlay" id="tonkeeperModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>💎 Upgrade via Tonkeeper</h3>
+          <button class="close-modal-btn" id="closeTonModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="selected-plan-summary" id="modalPlanSummary">
+            <!-- Populated via JS -->
+          </div>
+
+          <div class="payment-steps">
+            <div class="step-line">
+              <span class="step-num">1</span>
+              <span>Send exact TON to Owner Wallet Address:</span>
+            </div>
+            <div class="address-copy-box">
+              <code class="ton-address">UQCEkkk4CCNo48fudDqX12UDxnSehnEHd-UFWzP5zH9w-hIT</code>
+              <button class="copy-icon-btn" id="modalCopyAddressBtn">📋</button>
+            </div>
+
+            <div class="step-line">
+              <span class="step-num">2</span>
+              <span>Open Tonkeeper App with 1-click:</span>
+            </div>
+            <a href="#" target="_blank" class="btn btn-tonkeeper btn-full" id="openTonkeeperLink">
+              <span>💎</span> Open in Tonkeeper App
+            </a>
+
+            <div class="step-line">
+              <span class="step-num">3</span>
+              <span>Paste Transaction Hash from your receipt:</span>
+            </div>
+            <input type="text" id="txHashInput" class="form-input" placeholder="Paste full TON Transaction Hash...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary btn-full" id="verifyTxBtn">
+            <span>🛡️</span> Verify & Activate Speed
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Streak Modal -->
+    <div class="modal-overlay" id="streakModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>🔥 7-Day Check-in Streak</h3>
+          <button class="close-modal-btn" id="closeStreakModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-sub" id="streakModalSub">Log in every 24 hours to claim your continuous $NASTA streak bonus!</p>
+          <div class="streak-grid" id="streakDaysGrid">
+            <!-- 7 days populated by app.js -->
+          </div>
+          <div id="streakTimerNotice" class="streak-timer-notice" style="display: none;">
+            <span>⏳</span> Day <strong id="streakNextDayNotice">2</strong> unlocks in: <strong id="streakLiveTimer">23:59:59</strong>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-gold btn-full" id="claimStreakBtn">
+            Claim Day <span id="currentStreakDayNum">1</span> Reward
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receive QR Modal -->
+    <div class="modal-overlay" id="receiveModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>↙️ Receive $NASTA / TON</h3>
+          <button class="close-modal-btn" id="closeReceiveModalBtn">✕</button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="qr-code-box">
+            <div class="simulated-qr">
+              <div class="qr-matrix"></div>
+              <img src="assets/coin.png" class="qr-center-logo" alt="NASTA">
+            </div>
+          </div>
+          <p class="address-label">Your TON Receiving Address:</p>
+          <div class="address-copy-box">
+            <code class="ton-address" id="userReceiveAddress">UQAf9x...K42M (Connected Wallet)</code>
+            <button class="copy-icon-btn" id="copyReceiveAddressBtn">📋</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Swap Crypto Modal -->
+    <div class="modal-overlay" id="swapModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>🔄 Instant DEX Swap</h3>
+          <button class="close-modal-btn" id="closeSwapModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="swap-input-group">
+            <label>You Pay</label>
+            <div class="input-with-select">
+              <input type="number" id="swapPayAmount" value="1000" placeholder="0.0">
+              <span class="currency-tag">$NASTA</span>
+            </div>
+          </div>
+          <div class="swap-arrow-divider">↓</div>
+          <div class="swap-input-group">
+            <label>You Receive (Estimated)</label>
+            <div class="input-with-select">
+              <input type="number" id="swapReceiveAmount" readonly value="4.36">
+              <span class="currency-tag">TON</span>
+            </div>
+          </div>
+          <div class="swap-rate-info">
+            1 TON ≈ 229.35 $NASTA • Slippage: 0.5%
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary btn-full" id="executeSwapBtn">
+            Confirm Swap
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Drawer -->
+    <div class="modal-overlay" id="notifModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>🔔 Notifications</h3>
+          <button class="close-modal-btn" id="closeNotifModalBtn">✕</button>
+        </div>
+        <div class="modal-body" id="notifListContainer">
+          <div class="notif-item unread">
+            <div class="notif-dot"></div>
+            <div class="notif-content">
+              <strong>Welcome to NASTA Ecosystem!</strong>
+              <p>Start tapping the coin, activate mining speed, and prepare for the TON listing.</p>
+              <small>Just now</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    <!-- Rewarded Ad Modal -->
+    <div class="modal-overlay" id="rewardedAdModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:var(--accent-gold); color:#070a12; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">AD</span>
+            <h3 style="font-size:15px;">Sponsored Rewarded Ad</h3>
+          </div>
+          <button class="close-modal-btn" id="closeAdModalBtn" style="display:none;">✕</button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="ad-video-simulation-card">
+            <div class="ad-sponsor-badge">📺 Sponsored Rewarded Video</div>
+            <div class="ad-video-screen">
+              <div class="ad-sponsor-logo">
+                <img src="assets/coin.png" alt="Sponsor" class="sponsor-coin-pulse">
+                <h4>NASTA ECOSYSTEM</h4>
+                <p>The Future of TON Tap-to-Earn</p>
+              </div>
+            </div>
+            <div class="ad-timer-bar-wrap">
+              <div class="ad-timer-fill" id="adTimerFill"></div>
+            </div>
+            <div class="ad-countdown-info">
+              Reward unlocks in: <strong id="adCountdownText">5s</strong>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary btn-full" id="claimAdRewardBtn" style="display:none;">
+            🎉 Claim +5 $NASTA Coin
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Popup -->
+    <div class="toast-popup" id="toastPopup">
+      <span id="toastIcon">✨</span>
+      <span id="toastMessage">Success!</span>
+    </div>
+
+  </div>
+
+  <!-- App Game Engine -->
+  <script src="app.js"></script>
+</body>
+</html>

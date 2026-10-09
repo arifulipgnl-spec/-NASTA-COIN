@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="goldOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF2A1"/>
+      <stop offset="25%" stop-color="#D4AF37"/>
+      <stop offset="50%" stop-color="#AA7C11"/>
+      <stop offset="75%" stop-color="#F3E5AB"/>
+      <stop offset="100%" stop-color="#8B6508"/>
+    </linearGradient>
+
+    <linearGradient id="goldBevel" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#604000"/>
+      <stop offset="30%" stop-color="#D4AF37"/>
+      <stop offset="50%" stop-color="#FFF8DC"/>
+      <stop offset="80%" stop-color="#AA7C11"/>
+      <stop offset="100%" stop-color="#4A3000"/>
+    </linearGradient>
+
+    <radialGradient id="innerBg" cx="50%" cy="50%" r="50%" fx="35%" fy="35%">
+      <stop offset="0%" stop-color="#FAF0D7"/>
+      <stop offset="60%" stop-color="#E2C481"/>
+      <stop offset="85%" stop-color="#B88E3E"/>
+      <stop offset="100%" stop-color="#7A5818"/>
+    </radialGradient>
+
+    <linearGradient id="textGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="30%" stop-color="#FFF3A1"/>
+      <stop offset="70%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#8B6508"/>
+    </linearGradient>
+
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <path id="textArcTop" d="M 75,256 A 181,181 0 1,1 437,256" fill="none"/>
+    <path id="textArcBottom" d="M 437,256 A 181,181 0 0,1 75,256" fill="none"/>
+  </defs>
+
+  <circle cx="256" cy="256" r="246" fill="#120D03"/>
+  <circle cx="256" cy="256" r="242" fill="url(#goldOuter)"/>
+
+  <g stroke="url(#goldBevel)" stroke-width="4" opacity="0.85">
+    <line x1="492.0" y1="256.0" x2="498.0" y2="256.0" />
+    <line x1="490.7" y1="280.7" x2="496.7" y2="281.3" />
+    <line x1="486.8" y1="305.1" x2="492.7" y2="306.3" />
+    <line x1="480.4" y1="328.9" x2="486.2" y2="330.8" />
+    <line x1="471.6" y1="352.0" x2="477.1" y2="354.4" />
+    <line x1="460.4" y1="374.0" x2="465.6" y2="377.0" />
+    <line x1="446.9" y1="394.7" x2="451.8" y2="398.2" />
+    <line x1="431.4" y1="413.9" x2="435.8" y2="417.9" />
+    <line x1="413.9" y1="431.4" x2="417.9" y2="435.8" />
+    <line x1="394.7" y1="446.9" x2="398.2" y2="451.8" />
+    <line x1="374.0" y1="460.4" x2="377.0" y2="465.6" />
+    <line x1="352.0" y1="471.6" x2="354.4" y2="477.1" />
+    <line x1="328.9" y1="480.4" x2="330.8" y2="486.2" />
+    <line x1="305.1" y1="486.8" x2="306.3" y2="492.7" />
+    <line x1="280.7" y1="490.7" x2="281.3" y2="496.7" />
+    <line x1="256.0" y1="492.0" x2="256.0" y2="498.0" />
+    <line x1="231.3" y1="490.7" x2="230.7" y2="496.7" />
+    <line x1="206.9" y1="486.8" x2="205.7" y2="492.7" />
+    <line x1="183.1" y1="480.4" x2="181.2" y2="486.2" />
+    <line x1="160.0" y1="471.6" x2="157.6" y2="477.1" />
+    <line x1="138.0" y1="460.4" x2="135.0" y2="465.6" />
+    <line x1="117.3" y1="446.9" x2="113.8" y2="451.8" />
+    <line x1="98.1" y1="431.4" x2="94.1" y2="435.8" />
+    <line x1="80.6" y1="413.9" x2="76.2" y2="417.9" />
+    <line x1="65.1" y1="394.7" x2="60.2" y2="398.2" />
+    <line x1="51.6" y1="374.0" x2="46.4" y2="377.0" />
+    <line x1="40.4" y1="352.0" x2="34.9" y2="354.4" />
+    <line x1="31.6" y1="328.9" x2="25.8" y2="330.8" />
+    <line x1="25.2" y1="305.1" x2="19.3" y2="306.3" />
+    <line x1="21.3" y1="280.7" x2="15.3" y2="281.3" />
+    <line x1="20.0" y1="256.0" x2="14.0" y2="256.0" />
+    <line x1="21.3" y1="231.3" x2="15.3" y2="230.7" />
+    <line x1="25.2" y1="206.9" x2="19.3" y2="205.7" />
+    <line x1="31.6" y1="183.1" x2="25.8" y2="181.2" />
+    <line x1="40.4" y1="160.0" x2="34.9" y2="157.6" />
+    <line x1="51.6" y1="138.0" x2="46.4" y2="135.0" />
+    <line x1="65.1" y1="117.3" x2="60.2" y2="113.8" />
+    <line x1="80.6" y1="98.1" x2="76.2" y2="94.1" />
+    <line x1="98.1" y1="80.6" x2="94.1" y2="76.2" />
+    <line x1="117.3" y1="65.1" x2="113.8" y2="60.2" />
+    <line x1="138.0" y1="51.6" x2="135.0" y2="46.4" />
+    <line x1="160.0" y1="40.4" x2="157.6" y2="34.9" />
+    <line x1="183.1" y1="31.6" x2="181.2" y2="25.8" />
+    <line x1="206.9" y1="25.2" x2="205.7" y2="19.3" />
+    <line x1="231.3" y1="21.3" x2="230.7" y2="15.3" />
+    <line x1="256.0" y1="20.0" x2="256.0" y2="14.0" />
+    <line x1="280.7" y1="21.3" x2="281.3" y2="15.3" />
+    <line x1="305.1" y1="25.2" x2="306.3" y2="19.3" />
+    <line x1="328.9" y1="31.6" x2="330.8" y2="25.8" />
+    <line x1="352.0" y1="40.4" x2="354.4" y2="34.9" />
+    <line x1="374.0" y1="51.6" x2="377.0" y2="46.4" />
+    <line x1="394.7" y1="65.1" x2="398.2" y2="60.2" />
+    <line x1="413.9" y1="80.6" x2="417.9" y2="76.2" />
+    <line x1="431.4" y1="98.1" x2="435.8" y2="94.1" />
+    <line x1="446.9" y1="117.3" x2="451.8" y2="113.8" />
+    <line x1="460.4" y1="138.0" x2="465.6" y2="135.0" />
+    <line x1="471.6" y1="160.0" x2="477.1" y2="157.6" />
+    <line x1="480.4" y1="183.1" x2="486.2" y2="181.2" />
+    <line x1="486.8" y1="206.9" x2="492.7" y2="205.7" />
+    <line x1="490.7" y1="231.3" x2="496.7" y2="230.7" />
+
+  </g>
+
+  <circle cx="256" cy="256" r="235" fill="none" stroke="url(#goldBevel)" stroke-width="6"/>
+  <circle cx="256" cy="256" r="226" fill="#2A1C06"/>
+  
+  <circle cx="256" cy="256" r="222" fill="url(#goldOuter)"/>
+  <circle cx="256" cy="256" r="190" fill="#2E1F07"/>
+  <circle cx="256" cy="256" r="186" fill="url(#goldBevel)"/>
+
+  <circle cx="256" cy="256" r="182" fill="url(#innerBg)"/>
+
+  <g stroke="#8B6508" stroke-width="1.5" opacity="0.45" fill="none">
+    <circle cx="256" cy="256" r="150" stroke-dasharray="8,6"/>
+    <circle cx="256" cy="256" r="110" stroke-dasharray="12,8"/>
+    <circle cx="256" cy="256" r="70" />
+    
+    <path d="M 106,256 L 146,256 L 166,236 L 216,236" />
+    <path d="M 406,256 L 366,256 L 346,276 L 296,276" />
+    <path d="M 256,106 L 256,146 L 236,166 L 236,206" />
+    <path d="M 256,406 L 256,366 L 276,346 L 276,306" />
+
+    <circle cx="106" cy="256" r="3" fill="#8B6508" />
+    <circle cx="406" cy="256" r="3" fill="#8B6508" />
+    <circle cx="256" cy="106" r="3" fill="#8B6508" />
+    <circle cx="256" cy="406" r="3" fill="#8B6508" />
+  </g>
+
+  <text font-family="'DejaVu Sans', 'Arial Black', sans-serif" font-weight="900" font-size="38" fill="url(#textGold)" filter="url(#dropShadow)" letter-spacing="6">
+    <textPath href="#textArcTop" startOffset="50%" text-anchor="middle">NASTA</textPath>
+  </text>
+
+  <text font-family="'DejaVu Sans', sans-serif" font-weight="800" font-size="13" fill="url(#textGold)" letter-spacing="1">
+    <textPath href="#textArcBottom" startOffset="50%" text-anchor="middle">NEXT-GEN ASSET &amp; SECURE TRANSACTION ALLIANCE</textPath>
+  </text>
+
+  <g filter="url(#dropShadow)">
+    <path d="M 256,120 L 340,155 C 340,250 295,310 256,340 C 217,310 172,250 172,155 Z" 
+          fill="none" stroke="url(#goldOuter)" stroke-width="12" stroke-linejoin="round"/>
+    
+    <path d="M 256,130 L 330,162 C 330,244 290,298 256,326 C 222,298 182,244 182,162 Z" 
+          fill="url(#innerBg)" stroke="url(#goldBevel)" stroke-width="4" stroke-linejoin="round"/>
+    
+    <path d="M 256,140 L 320,169 C 320,238 284,286 256,312 C 228,286 192,238 192,169 Z" 
+          fill="none" stroke="url(#goldOuter)" stroke-width="2" stroke-dasharray="4,3"/>
+  </g>
+
+  <g filter="url(#dropShadow)">
+    <path d="M 200,285 L 200,195 L 222,195 L 244,250 L 244,195 L 260,195 L 260,285 L 238,285 L 216,230 L 216,285 Z"
+          fill="url(#goldOuter)" stroke="#4A3000" stroke-width="2" stroke-linejoin="round"/>
+    
+    <path d="M 312,212 C 304,200 292,194 278,194 C 258,194 244,210 244,240 C 244,270 258,286 278,286 C 292,286 304,280 312,268 L 326,278 C 314,296 298,304 278,304 C 246,304 224,278 224,240 C 224,202 246,176 278,176 C 298,176 314,184 326,202 Z"
+          fill="url(#goldOuter)" stroke="#4A3000" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+
+  <ellipse cx="210" cy="170" rx="90" ry="40" fill="#FFFFFF" opacity="0.12" transform="rotate(-25 210 170)"/>
+</svg>
