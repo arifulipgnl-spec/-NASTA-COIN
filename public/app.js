@@ -1287,10 +1287,9 @@
     });
   });
 
-    // --- Video Opening Intro Controller (Full Sound, Clean Cinema Mode) ---
+    // --- Video Opening Intro Controller (Zero Popups, 100% Clean Fullscreen) ---
     const splashScreen = document.getElementById('splashScreen');
     const introVideo = document.getElementById('introVideo');
-    const soundUnlockOverlay = document.getElementById('soundUnlockOverlay');
     const splashProgressFill = document.getElementById('splashProgressFill');
     const splashStatusText = document.getElementById('splashStatusText');
     const splashPercentText = document.getElementById('splashPercentText');
@@ -1312,39 +1311,15 @@
       }
     }
 
-    // Function to unlock 100% full sound & play
-    function startVideoWithSound() {
-      if (!introVideo) return;
-      introVideo.muted = false;
-      introVideo.volume = 1.0;
-      if (soundUnlockOverlay) soundUnlockOverlay.style.display = 'none';
-      introVideo.play().catch(e => {
-        console.warn('Play attempt notice:', e);
-      });
-    }
-
-    // When user taps the sound unlock overlay or touches anywhere
-    if (soundUnlockOverlay) {
-      soundUnlockOverlay.addEventListener('click', (e) => {
-        e.stopPropagation();
-        startVideoWithSound();
-      });
-      soundUnlockOverlay.addEventListener('touchstart', (e) => {
-        e.stopPropagation();
-        startVideoWithSound();
-      }, { passive: true });
-    }
-
-    // Optional tap to skip video once it is already playing
-    if (splashScreen) {
-      splashScreen.addEventListener('click', () => {
-        if (introVideo && introVideo.muted) {
-          startVideoWithSound();
-        } else if (introVideo && !introVideo.paused && introVideo.currentTime > 1.5) {
-          finishIntro();
-        }
-      });
-    }
+    // Invisible global un-mute listener: If mobile blocks audio at 0s, any touch instantly unmutes with zero popups
+    const silentUnmuteOnTouch = () => {
+      if (introVideo && introVideo.muted) {
+        introVideo.muted = false;
+        introVideo.volume = 1.0;
+      }
+    };
+    window.addEventListener('click', silentUnmuteOnTouch, { passive: true });
+    window.addEventListener('touchstart', silentUnmuteOnTouch, { passive: true });
 
     // Video Playback Events
     if (introVideo) {
@@ -1369,17 +1344,11 @@
         }
       });
 
-      // Try unmuted autoplay directly
+      // Try autoplay with sound directly
       const playPromise = introVideo.play();
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          // Autoplay with sound allowed by device
-          if (soundUnlockOverlay) soundUnlockOverlay.style.display = 'none';
-        }).catch((err) => {
-          console.log('Mobile browser policy requires tap to play audio:', err);
-          // Show stylish TAP TO START sound unlock card
-          if (soundUnlockOverlay) soundUnlockOverlay.style.display = 'flex';
-          // Also buffer/play in background
+        playPromise.catch((err) => {
+          console.log('Mobile autoplay policy: video starting muted, unmuting on touch:', err);
           introVideo.muted = true;
           introVideo.play().catch(e => {});
         });
