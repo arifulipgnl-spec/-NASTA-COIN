@@ -62,6 +62,7 @@
     currentStreak: 0,
     lastStreakClaimTime: 0,
     connectedTonWallet: null,
+    connectedWalletName: null,
     tonBalance: 0.0,
     usdtBalance: 0.0,
     totalTaps: 0,
@@ -160,6 +161,7 @@
               }
               if (cloudState.connectedTonWallet && !state.connectedTonWallet) {
                 state.connectedTonWallet = cloudState.connectedTonWallet;
+                state.connectedWalletName = cloudState.connectedWalletName || 'TON Wallet';
                 updated = true;
               }
 
@@ -411,12 +413,19 @@
     walletUsdtBalance.textContent = state.usdtBalance.toFixed(2);
 
     if (state.connectedTonWallet) {
-      walletStatusTitle.textContent = 'TON Wallet Connected ✅';
-      walletStatusDesc.textContent = `${state.connectedTonWallet.substring(0, 8)}...${state.connectedTonWallet.substring(state.connectedTonWallet.length - 6)}`;
-      connectWalletBtn.textContent = 'Wallet Connected';
+      walletStatusTitle.textContent = `${state.connectedWalletName || 'TON Wallet'} Connected ✅`;
+      walletStatusDesc.textContent = `${state.connectedTonWallet.substring(0, 10)}...${state.connectedTonWallet.substring(state.connectedTonWallet.length - 8)}`;
+      connectWalletBtn.textContent = 'Manage / Switch Wallet';
       connectWalletBtn.classList.remove('btn-primary');
       connectWalletBtn.classList.add('btn-outline');
       userReceiveAddress.textContent = state.connectedTonWallet;
+    } else {
+      walletStatusTitle.textContent = 'Connect TON Crypto Wallet';
+      walletStatusDesc.textContent = 'Connect your Telegram @wallet, Tonkeeper, Tonhub or any other TON wallet for $NASTA withdrawals.';
+      connectWalletBtn.innerHTML = '<span>🔗</span> Connect Wallet';
+      connectWalletBtn.classList.add('btn-primary');
+      connectWalletBtn.classList.remove('btn-outline');
+      userReceiveAddress.textContent = 'No wallet connected yet';
     }
 
     // 6. User Meta
@@ -1152,25 +1161,125 @@
     });
   }
 
-  // --- Wallet Actions ---
-  connectWalletBtn.addEventListener('click', () => {
+  // --- Multi-Wallet Modal Logic ---
+  const walletSelectModal = document.getElementById('walletSelectModal');
+  const closeWalletSelectModalBtn = document.getElementById('closeWalletSelectModalBtn');
+  const activeWalletBanner = document.getElementById('activeWalletBanner');
+  const activeWalletTitle = document.getElementById('activeWalletTitle');
+  const activeWalletShortAddr = document.getElementById('activeWalletShortAddr');
+  const disconnectWalletBtn = document.getElementById('disconnectWalletBtn');
+  const customTonAddressInput = document.getElementById('customTonAddressInput');
+  const pasteAddressBtn = document.getElementById('pasteAddressBtn');
+  const confirmCustomWalletBtn = document.getElementById('confirmCustomWalletBtn');
+  const walletProviderItems = document.querySelectorAll('.wallet-provider-item');
+
+  function openWalletSelectModal() {
+    if (!walletSelectModal) return;
+    triggerHaptic('selection');
+
     if (state.connectedTonWallet) {
-      showToast('Tonkeeper Wallet already connected!', '💎');
-      return;
+      if (activeWalletBanner) activeWalletBanner.style.display = 'block';
+      if (activeWalletTitle) activeWalletTitle.textContent = state.connectedWalletName || 'TON Wallet';
+      if (activeWalletShortAddr) {
+        const addr = state.connectedTonWallet;
+        activeWalletShortAddr.textContent = `${addr.substring(0, 10)}...${addr.substring(addr.length - 8)}`;
+      }
+    } else {
+      if (activeWalletBanner) activeWalletBanner.style.display = 'none';
     }
 
-    // Connect wallet simulation
-    connectWalletBtn.textContent = 'Connecting Tonkeeper...';
-    setTimeout(() => {
-      const mockAddr = 'UQAf9x4...' + Math.random().toString(36).substring(2, 8).toUpperCase() + 'K42M';
-      state.connectedTonWallet = mockAddr;
-      state.tonBalance = 1.50;
-      state.usdtBalance = 10.0;
-      triggerHaptic('notification', 'success');
-      showToast('Tonkeeper Wallet Connected! 💎', '✅');
-      updateUI();
-    }, 1000);
+    if (customTonAddressInput) {
+      customTonAddressInput.value = state.connectedTonWallet || '';
+    }
+
+    walletSelectModal.classList.add('active');
+  }
+
+  function closeWalletSelectModal() {
+    if (walletSelectModal) walletSelectModal.classList.remove('active');
+  }
+
+  if (connectWalletBtn) {
+    connectWalletBtn.addEventListener('click', openWalletSelectModal);
+  }
+
+  if (closeWalletSelectModalBtn) {
+    closeWalletSelectModalBtn.addEventListener('click', closeWalletSelectModal);
+  }
+
+  // Handle Provider Selection (Telegram Wallet, Tonkeeper, Tonhub, MyTonWallet, Other)
+  walletProviderItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const walletName = item.getAttribute('data-name') || 'TON Wallet';
+      triggerHaptic('selection');
+
+      const existingAddr = state.connectedTonWallet || '';
+      const promptMsg = `Enter your ${walletName} address (UQ... or EQ...):`;
+      const inputAddr = prompt(promptMsg, existingAddr);
+
+      if (inputAddr !== null) {
+        const clean = inputAddr.trim();
+        if (clean.length < 10) {
+          showToast('Please enter a valid TON address!', '⚠️');
+          return;
+        }
+        setConnectedWallet(clean, walletName);
+      }
+    });
   });
+
+  // Paste from clipboard
+  if (pasteAddressBtn && customTonAddressInput) {
+    pasteAddressBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          customTonAddressInput.value = text.trim();
+          showToast('Address pasted from clipboard!', '📋');
+        }
+      } catch (e) {
+        showToast('Please paste manually into the input', '✍️');
+      }
+    });
+  }
+
+  // Confirm custom address
+  if (confirmCustomWalletBtn && customTonAddressInput) {
+    confirmCustomWalletBtn.addEventListener('click', () => {
+      const addr = customTonAddressInput.value.trim();
+      if (!addr || addr.length < 10) {
+        triggerHaptic('notification', 'error');
+        showToast('Please enter a valid TON address (UQ... or EQ...)!', '⚠️');
+        return;
+      }
+      setConnectedWallet(addr, 'Custom TON Wallet');
+    });
+  }
+
+  // Disconnect wallet
+  if (disconnectWalletBtn) {
+    disconnectWalletBtn.addEventListener('click', () => {
+      state.connectedTonWallet = null;
+      state.connectedWalletName = null;
+      saveState();
+      triggerHaptic('notification', 'warning');
+      showToast('TON Wallet Disconnected', '🔌');
+      closeWalletSelectModal();
+      updateUI();
+    });
+  }
+
+  function setConnectedWallet(address, providerName) {
+    state.connectedTonWallet = address;
+    state.connectedWalletName = providerName;
+    if (state.tonBalance === 0) state.tonBalance = 1.25;
+    if (state.usdtBalance === 0) state.usdtBalance = 5.0;
+    saveState();
+    triggerHaptic('notification', 'success');
+    showToast(`${providerName} Connected! 💎`, '✅');
+    closeWalletSelectModal();
+    updateUI();
+  }
 
   document.getElementById('receiveBtn').addEventListener('click', () => {
     receiveModal.classList.add('active');

@@ -1991,3 +1991,174 @@ body {
   letter-spacing: 1px;
   font-weight: 600;
 }
+
+/* ==================== MULTI-WALLET SELECTOR MODAL ==================== */
+.wallet-picker-card {
+  max-width: 480px;
+}
+
+.wallet-providers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.wallet-provider-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.wallet-provider-item:hover,
+.wallet-provider-item:active {
+  border-color: var(--primary-cyan);
+  background: rgba(0, 229, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.wallet-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.tg-wallet-icon {
+  background: linear-gradient(135deg, #0088cc, #229ed9);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.35);
+}
+
+.tonkeeper-icon {
+  background: linear-gradient(135deg, #3390ec, #1f6fd8);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(31, 111, 216, 0.35);
+}
+
+.tonhub-icon {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+.myton-icon {
+  background: linear-gradient(135deg, #00b4d8, #0077b6);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 180, 216, 0.35);
+}
+
+.other-wallet-icon {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+}
+
+.wallet-provider-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.wallet-provider-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.wallet-provider-info p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wallet-chevron {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 700;
+  transition: transform 0.2s;
+}
+
+.wallet-provider-item:hover .wallet-chevron {
+  color: var(--primary-cyan);
+  transform: translateX(3px);
+}
+
+.wallet-divider-text {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 16px 0 12px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.wallet-divider-text::before,
+.wallet-divider-text::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.wallet-divider-text span {
+  padding: 0 10px;
+}
+
+.custom-wallet-input-group {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.custom-wallet-input-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.custom-address-row {
+  display: flex;
+  gap: 8px;
+}
+
+.custom-address-row input {
+  flex: 1;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.custom-address-row input:focus {
+  border-color: var(--primary-cyan);
+}
+
+.input-hint {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}

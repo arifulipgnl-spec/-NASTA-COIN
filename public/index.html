@@ -393,7 +393,7 @@
           <h3 id="walletStatusTitle">Connect TON Crypto Wallet</h3>
           <p id="walletStatusDesc">Connect your Tonkeeper, Telegram @wallet or MyTonWallet to prepare for $NASTA token airdrop & withdrawal.</p>
           <button class="btn btn-primary" id="connectWalletBtn">
-            <span>🔗</span> Connect Tonkeeper
+            <span>🔗</span> Connect Wallet
           </button>
         </div>
 
@@ -640,6 +640,111 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ==================== MULTI-WALLET CONNECTOR MODAL ==================== -->
+    <div class="modal-overlay" id="walletSelectModal">
+      <div class="modal-card wallet-picker-card">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(0,229,255,0.15); display:flex; align-items:center; justify-content:center; font-size:18px;">💎</div>
+            <div>
+              <h3 style="font-size:16px; margin:0;">Connect TON Wallet</h3>
+              <p style="font-size:11px; color:var(--text-muted); margin:0;">Choose your wallet app or enter address</p>
+            </div>
+          </div>
+          <button class="close-modal-btn" id="closeWalletSelectModalBtn">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Active Connected Wallet Card (if any) -->
+          <div id="activeWalletBanner" style="display:none; margin-bottom:14px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.4); border-radius:14px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <small style="color:#10b981; font-weight:800; font-size:10px; letter-spacing:0.5px;">CURRENTLY CONNECTED</small>
+                <div style="font-size:13px; font-weight:700; color:#fff;" id="activeWalletTitle">Tonkeeper</div>
+                <code style="font-size:11px; color:var(--text-secondary);" id="activeWalletShortAddr">UQ...</code>
+              </div>
+              <button class="btn btn-sm btn-outline" id="disconnectWalletBtn" type="button" style="color:#ef4444; border-color:rgba(239,68,68,0.4);">
+                Disconnect
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Wallet Provider Selection -->
+          <div class="wallet-providers-list">
+            <!-- 1. Telegram Wallet -->
+            <div class="wallet-provider-item" data-wallet="telegram" data-name="Telegram Wallet (@wallet)">
+              <div class="wallet-icon-box tg-wallet-icon">✈️</div>
+              <div class="wallet-provider-info">
+                <h4>Telegram Wallet (@wallet)</h4>
+                <p>Native Telegram in-app TON wallet</p>
+              </div>
+              <span class="wallet-chevron">➔</span>
+            </div>
+
+            <!-- 2. Tonkeeper -->
+            <div class="wallet-provider-item" data-wallet="tonkeeper" data-name="Tonkeeper">
+              <div class="wallet-icon-box tonkeeper-icon">🛡️</div>
+              <div class="wallet-provider-info">
+                <h4>Tonkeeper</h4>
+                <p>Popular non-custodial mobile app</p>
+              </div>
+              <span class="wallet-chevron">➔</span>
+            </div>
+
+            <!-- 3. Tonhub -->
+            <div class="wallet-provider-item" data-wallet="tonhub" data-name="Tonhub">
+              <div class="wallet-icon-box tonhub-icon">⚡</div>
+              <div class="wallet-provider-info">
+                <h4>Tonhub</h4>
+                <p>Advanced non-custodial TON wallet</p>
+              </div>
+              <span class="wallet-chevron">➔</span>
+            </div>
+
+            <!-- 4. MyTonWallet -->
+            <div class="wallet-provider-item" data-wallet="mytonwallet" data-name="MyTonWallet">
+              <div class="wallet-icon-box myton-icon">💎</div>
+              <div class="wallet-provider-info">
+                <h4>MyTonWallet</h4>
+                <p>Multi-account Web & Mobile</p>
+              </div>
+              <span class="wallet-chevron">➔</span>
+            </div>
+
+            <!-- 5. Other TON Wallets -->
+            <div class="wallet-provider-item" data-wallet="other" data-name="Other TON Wallet">
+              <div class="wallet-icon-box other-wallet-icon">🌐</div>
+              <div class="wallet-provider-info">
+                <h4>Other TON Wallets</h4>
+                <p>Bitget, OKX, DeWallet, Binance TON</p>
+              </div>
+              <span class="wallet-chevron">➔</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="wallet-divider-text">
+            <span>OR ENTER / PASTE ANY TON ADDRESS</span>
+          </div>
+
+          <!-- Custom Address Input -->
+          <div class="custom-wallet-input-group">
+            <label for="customTonAddressInput">Enter or Paste TON Address:</label>
+            <div class="custom-address-row">
+              <input type="text" id="customTonAddressInput" placeholder="UQ... or EQ... (48 chars)" spellcheck="false" autocomplete="off">
+              <button class="btn btn-sm btn-outline" id="pasteAddressBtn" type="button">Paste</button>
+            </div>
+            <small class="input-hint">Paste your own address from any TON wallet or exchange</small>
+            <button class="btn btn-primary btn-full" id="confirmCustomWalletBtn" type="button" style="margin-top:10px;">
+              <span>💾</span> Connect This Address
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Rewarded Ad Modal -->
     <div class="modal-overlay" id="rewardedAdModal">
       <div class="modal-card">
