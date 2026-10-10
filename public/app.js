@@ -63,6 +63,7 @@
     lastStreakClaimTime: 0,
     connectedTonWallet: null,
     connectedWalletName: null,
+    walletUpdatedAt: 0,
     tonBalance: 0.0,
     usdtBalance: 0.0,
     totalTaps: 0,
@@ -109,41 +110,83 @@
   }
 
   let cloudSaveTimeout = null;
-  function saveState() {
+  function saveState(immediate = false) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {}
 
     // Cloud sync with Telegram CloudStorage across all user devices (Phone, PC, Web)
     if (tg?.CloudStorage) {
-      if (cloudSaveTimeout) clearTimeout(cloudSaveTimeout);
-      cloudSaveTimeout = setTimeout(() => {
+      const doSave = () => {
         try {
           const serialized = JSON.stringify(state);
           tg.CloudStorage.setItem(STORAGE_KEY, serialized, (err, stored) => {
             if (err) console.warn('Telegram CloudStorage setItem notice:', err);
           });
         } catch (e) {}
-      }, 500);
+      };
+
+      if (immediate) {
+        if (cloudSaveTimeout) clearTimeout(cloudSaveTimeout);
+        doSave();
+      } else {
+        if (cloudSaveTimeout) clearTimeout(cloudSaveTimeout);
+        cloudSaveTimeout = setTimeout(doSave, 400);
+      }
     }
   }
 
   function syncCloudStorage() {
     if (!tg?.CloudStorage) return;
+
+    // 1. First Priority: Check dedicated wallet key (never affected by coin taps or balance race conditions)
+    try {
+      tg.CloudStorage.getItem('nasta_user_wallet_v1', (err, wValue) => {
+        if (!err && wValue) {
+          try {
+            const wData = JSON.parse(wValue);
+            if (wData && wData.address) {
+              if (state.connectedTonWallet !== wData.address) {
+                state.connectedTonWallet = wData.address;
+                state.connectedWalletName = wData.name || 'TON Wallet';
+                state.walletUpdatedAt = wData.updatedAt || Date.now();
+                try {
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                } catch(e) {}
+                updateUI();
+              }
+            }
+          } catch(e) {}
+        }
+      });
+    } catch(e) {}
+
+    // 2. Second: Check main STORAGE_KEY
     try {
       tg.CloudStorage.getItem(STORAGE_KEY, (err, value) => {
         if (!err && value) {
           try {
             const cloudState = JSON.parse(value);
-            if (cloudState && typeof cloudState.balance === 'number') {
+            if (cloudState) {
               let updated = false;
 
               // Adopt higher balance so user never loses earned coins across devices
-              if (cloudState.balance > state.balance) {
+              if (typeof cloudState.balance === 'number' && cloudState.balance > state.balance) {
                 state.balance = cloudState.balance;
                 updated = true;
-              } else if (state.balance > cloudState.balance) {
-                saveState();
+              }
+
+              // Cross-device connected wallet sync:
+              // If cloud has a connected wallet and local doesn't, OR cloud's wallet is newer/different
+              if (cloudState.connectedTonWallet) {
+                const cloudWalletTime = Number(cloudState.walletUpdatedAt) || 0;
+                const localWalletTime = Number(state.walletUpdatedAt) || 0;
+                if (!state.connectedTonWallet || cloudWalletTime >= localWalletTime || state.connectedTonWallet !== cloudState.connectedTonWallet) {
+                  state.connectedTonWallet = cloudState.connectedTonWallet;
+                  state.connectedWalletName = cloudState.connectedWalletName || 'TON Wallet';
+                  state.walletUpdatedAt = Math.max(cloudWalletTime, localWalletTime, Date.now());
+                  updated = true;
+                }
               }
 
               if ((cloudState.miningSpeedPerHour || 0) > (state.miningSpeedPerHour || 0)) {
@@ -159,11 +202,6 @@
                 state.completedTasks = Array.from(new Set([...state.completedTasks, ...cloudState.completedTasks]));
                 updated = true;
               }
-              if (cloudState.connectedTonWallet && !state.connectedTonWallet) {
-                state.connectedTonWallet = cloudState.connectedTonWallet;
-                state.connectedWalletName = cloudState.connectedWalletName || 'TON Wallet';
-                updated = true;
-              }
 
               if (updated) {
                 try {
@@ -172,19 +210,34 @@
                 updateUI();
                 if (typeof renderTasks === 'function') renderTasks();
               }
+
+              // If local had higher balance, sync the updated merged state back to cloud
+              if (state.balance > (cloudState.balance || 0) || (state.connectedTonWallet && !cloudState.connectedTonWallet)) {
+                saveState();
+              }
             }
           } catch (e) {
             console.warn('Telegram CloudStorage parse notice:', e);
           }
-        } else if (!value && state.balance > 0) {
-          // First time opening with local progress, push to cloud
-          saveState();
+        } else if (!value && (state.balance > 0 || state.connectedTonWallet)) {
+          // First time opening with local progress, push to cloud immediately
+          saveState(true);
         }
       });
     } catch (e) {
       console.warn('Telegram CloudStorage init notice:', e);
     }
   }
+
+  // Cross-device auto-sync when user returns or focuses window
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      syncCloudStorage();
+    }
+  });
+  window.addEventListener('focus', () => {
+    syncCloudStorage();
+  });
 
   // --- Task Definitions ---
   const tasksConfig = [
@@ -1261,7 +1314,13 @@
     disconnectWalletBtn.addEventListener('click', () => {
       state.connectedTonWallet = null;
       state.connectedWalletName = null;
-      saveState();
+      state.walletUpdatedAt = Date.now();
+      saveState(true);
+      if (tg?.CloudStorage) {
+        try {
+          tg.CloudStorage.removeItem('nasta_user_wallet_v1', () => {});
+        } catch (e) {}
+      }
       triggerHaptic('notification', 'warning');
       showToast('TON Wallet Disconnected', '🔌');
       closeWalletSelectModal();
@@ -1272,9 +1331,27 @@
   function setConnectedWallet(address, providerName) {
     state.connectedTonWallet = address;
     state.connectedWalletName = providerName;
+    state.walletUpdatedAt = Date.now();
     if (state.tonBalance === 0) state.tonBalance = 1.25;
     if (state.usdtBalance === 0) state.usdtBalance = 5.0;
-    saveState();
+    
+    // Immediate cross-device cloud sync
+    saveState(true);
+
+    // Save under isolated dedicated key in Telegram CloudStorage
+    if (tg?.CloudStorage) {
+      try {
+        const walletPayload = JSON.stringify({
+          address: address,
+          name: providerName,
+          updatedAt: state.walletUpdatedAt
+        });
+        tg.CloudStorage.setItem('nasta_user_wallet_v1', walletPayload, (err) => {
+          if (err) console.warn('Dedicated wallet cloud save notice:', err);
+        });
+      } catch (e) {}
+    }
+
     triggerHaptic('notification', 'success');
     showToast(`${providerName} Connected! 💎`, '✅');
     closeWalletSelectModal();
