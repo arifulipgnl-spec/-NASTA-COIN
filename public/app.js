@@ -1086,18 +1086,28 @@
     updateUI();
   }
 
-  // --- Rewarded Ads System (Adsgram & Web Rewarded Video Player) ---
-  // You can set your real Adsgram Block ID from https://adsgram.ai here:
-  const DEFAULT_ADSGRAM_BLOCK_ID = "YOUR_ADSGRAM_BLOCK_ID";
+  // --- Rewarded Ads System (Official Telegram Adsgram & Smart Fallback) ---
+  const DEFAULT_ADSGRAM_BLOCK_ID = "53016";
   let adsgramController = null;
 
+  function getAdsgramController() {
+    if (!adsgramController && window.Adsgram && DEFAULT_ADSGRAM_BLOCK_ID) {
+      try {
+        adsgramController = window.Adsgram.init({ blockId: DEFAULT_ADSGRAM_BLOCK_ID });
+        console.log("Adsgram controller initialized successfully with Block ID:", DEFAULT_ADSGRAM_BLOCK_ID);
+      } catch (e) {
+        console.warn("Adsgram initialization notice:", e);
+      }
+    }
+    return adsgramController;
+  }
+
+  // Pre-initialize Adsgram on startup
   try {
-    if (window.Adsgram && DEFAULT_ADSGRAM_BLOCK_ID !== "YOUR_ADSGRAM_BLOCK_ID") {
+    if (window.Adsgram && DEFAULT_ADSGRAM_BLOCK_ID) {
       adsgramController = window.Adsgram.init({ blockId: DEFAULT_ADSGRAM_BLOCK_ID });
     }
-  } catch (e) {
-    console.warn("Adsgram initialization notice:", e);
-  }
+  } catch (e) {}
 
   const rewardedAdModal = document.getElementById('rewardedAdModal');
   const closeAdModalBtn = document.getElementById('closeAdModalBtn');
@@ -1107,26 +1117,39 @@
   let adInterval = null;
 
   function showRewardedAdFlow(rewardAmount = 5) {
-    // 1. If Adsgram SDK is configured with a real Block ID inside Telegram:
-    if (adsgramController) {
-      showToast('Loading Telegram Rewarded Ad...', '📺');
-      adsgramController.show().then((result) => {
+    const controller = getAdsgramController();
+
+    // 1. If Adsgram SDK is ready inside Telegram Mini App:
+    if (controller) {
+      showToast('Loading Adsgram Rewarded Video...', '📺');
+      controller.show().then((result) => {
         state.balance += rewardAmount;
-        saveState();
+        saveState(true);
         triggerHaptic('notification', 'success');
         showToast(`🎉 +${rewardAmount} $NASTA Coins Earned from Ad!`, '💎');
         updateUI();
       }).catch((result) => {
         triggerHaptic('notification', 'warning');
-        showToast('Ad was skipped or unavailable. Watch full ad for 5 NASTA!', '⚠️');
+        console.warn("Adsgram result:", result);
+        if (result && (result.error || result.description)) {
+          // If ad network was busy / empty inventory, gracefully start backup video so user still gets 5 $NASTA
+          showToast('Live ad busy, starting backup video (+5 $NASTA)...', '📺');
+          showBackupVideoModal(rewardAmount);
+        } else {
+          showToast('Ad was skipped. Watch full ad for 5 NASTA!', '⚠️');
+        }
       });
       return;
     }
 
-    // 2. Interactive Video Ad Player Fallback (works 100% in browsers & Telegram)
+    // 2. Interactive Backup Video Player Fallback (for browser testing / offline fallback)
+    showBackupVideoModal(rewardAmount);
+  }
+
+  function showBackupVideoModal(rewardAmount = 5) {
     if (!rewardedAdModal) {
       state.balance += rewardAmount;
-      saveState();
+      saveState(true);
       showToast(`+${rewardAmount} $NASTA Coins from Ad! ✨`, '🎉');
       triggerHaptic('notification', 'success');
       updateUI();
