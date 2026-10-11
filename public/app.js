@@ -91,39 +91,61 @@
     console.error('Error loading saved state:', e);
   }
 
-  // Ensure 30 taps pool & sync active cooldown
-  state.maxEnergy = 30;
+  // Ensure energy capacity reflects Hardware Lab upgrades & sync active cooldown
+  const currentTankLevel = Math.max(1, parseInt(state.tankLevel, 10) || 1);
+  state.maxEnergy = 30 + (currentTankLevel - 1) * 10;
   if (typeof state.energy !== 'number' || isNaN(state.energy)) {
-    state.energy = 30;
+    state.energy = state.maxEnergy;
   }
   const initNow = Date.now();
+  const recLvl = Math.max(1, parseInt(state.rechargeLevel, 10) || 1);
+  const cdMinutes = Math.max(10, 30 - (recLvl - 1) * 5);
+  const totalCdMs = cdMinutes * 60 * 1000;
+
   if (state.cooldownEndTime) {
     if (initNow >= state.cooldownEndTime) {
       // Cooldown completed while user was away
       state.cooldownEndTime = null;
-      state.energy = 30;
+      state.energy = state.maxEnergy;
     } else {
-      // Cooldown still active: 30 taps accumulate over 30 mins (1 per 60s)
-      const totalCdMs = 30 * 60 * 1000;
+      // Cooldown still active: calculate accumulated taps
       const remainingMs = state.cooldownEndTime - initNow;
       const elapsedMs = Math.max(0, totalCdMs - remainingMs);
-      state.energy = Math.min(30, Math.floor(elapsedMs / 60000));
+      const secPerTap = (cdMinutes * 60) / state.maxEnergy;
+      state.energy = Math.min(state.maxEnergy, Math.floor(elapsedMs / (secPerTap * 1000)));
     }
   } else {
-    // If energy was clamped to 10 in previous version and not in cooldown, top up or clamp between 0 and 30
     if (state.energy < 0) state.energy = 0;
-    if (state.energy > 30) state.energy = 30;
+    if (state.energy > state.maxEnergy) state.energy = state.maxEnergy;
   }
 
+  // --- High-Performance Debounced State Persistence ---
+  let localSaveTimeout = null;
   let cloudSaveTimeout = null;
+
   function saveState(immediate = false) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {}
+    const doLocalSave = () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    };
+
+    if (immediate) {
+      if (localSaveTimeout) clearTimeout(localSaveTimeout);
+      localSaveTimeout = null;
+      doLocalSave();
+    } else {
+      if (!localSaveTimeout) {
+        localSaveTimeout = setTimeout(() => {
+          localSaveTimeout = null;
+          doLocalSave();
+        }, 250);
+      }
+    }
 
     // Cloud sync with Telegram CloudStorage across all user devices (Phone, PC, Web)
     if (tg?.CloudStorage) {
-      const doSave = () => {
+      const doCloudSave = () => {
         try {
           const serialized = JSON.stringify(state);
           tg.CloudStorage.setItem(STORAGE_KEY, serialized, (err, stored) => {
@@ -134,13 +156,18 @@
 
       if (immediate) {
         if (cloudSaveTimeout) clearTimeout(cloudSaveTimeout);
-        doSave();
+        cloudSaveTimeout = null;
+        doCloudSave();
       } else {
         if (cloudSaveTimeout) clearTimeout(cloudSaveTimeout);
-        cloudSaveTimeout = setTimeout(doSave, 400);
+        cloudSaveTimeout = setTimeout(doCloudSave, 500);
       }
     }
   }
+
+  // Flush state immediately when app unloads or backgrounded
+  window.addEventListener('beforeunload', () => saveState(true));
+  window.addEventListener('pagehide', () => saveState(true));
 
   function syncCloudStorage() {
     if (!tg?.CloudStorage) return;
@@ -594,9 +621,13 @@
     floatEl.style.top = `${y}px`;
     document.body.appendChild(floatEl);
 
-    setTimeout(() => {
+    floatEl.addEventListener('animationend', () => {
       floatEl.remove();
-    }, 850);
+    }, { once: true });
+
+    setTimeout(() => {
+      if (floatEl.parentNode) floatEl.remove();
+    }, 900);
   }
 
   // Attach tap handlers (Touch & Click)

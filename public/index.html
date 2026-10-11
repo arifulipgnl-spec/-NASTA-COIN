@@ -2,14 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>NASTA Coin - TON Cryptocurrency Mini App</title>
   
+  <!-- Preload Critical LCP Asset -->
+  <link rel="preload" as="image" href="assets/coin.png" fetchpriority="high">
+
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
-  <!-- Adsgram SDK for Telegram Mini App Rewarded Ads -->
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  <!-- Adsgram SDK for Telegram Mini App Rewarded Ads (Async non-blocking) -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js" async></script>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,27 +28,6 @@
 </head>
 <body>
   <div id="app" class="app-container">
-    
-    <!-- ==================== VIDEO OPENING INTRO / SPLASH SCREEN ==================== -->
-    <div id="splashScreen" class="splash-screen video-intro-screen">
-      <video id="introVideo" class="intro-video" playsinline webkit-playsinline preload="auto">
-        <source src="assets/intro.mp4" type="video/mp4">
-      </video>
-
-
-      <!-- Bottom Progress Overlay -->
-      <div class="video-overlay-footer">
-        <div class="splash-loader-box">
-          <div class="splash-progress-track">
-            <div id="splashProgressFill" class="splash-progress-fill"></div>
-          </div>
-          <div class="splash-status-row">
-            <span id="splashStatusText" class="splash-status-text">Entering NASTA Universe...</span>
-            <span id="splashPercentText" class="splash-percent-text">0%</span>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Top Telegram Header -->
     <header class="app-header">
@@ -470,7 +452,7 @@
               <span>$NASTA</span>
             </div>
             <div class="crypto-val" id="walletNastaBalance">0</div>
-            <small class="crypto-usd" id="walletNastaUsd">≈ $0.00</small>
+            <small class="crypto-usd" id="walletNastaUsd">Season 1 Points</small>
           </div>
 
           <div class="crypto-box">

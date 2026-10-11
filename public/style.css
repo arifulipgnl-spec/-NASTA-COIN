@@ -200,6 +200,7 @@ body {
 
 .tab-panel {
   display: none;
+  contain: content;
   animation: fadeIn 0.25s ease-out;
 }
 
@@ -351,6 +352,10 @@ body {
   height: 240px;
   cursor: pointer;
   perspective: 1000px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .interactive-coin {
@@ -360,6 +365,8 @@ body {
   transition: transform 0.08s ease-out;
   filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.7));
   pointer-events: none;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 /* Coin Tap Floating Numbers (+1, +2) */
@@ -372,6 +379,8 @@ body {
   pointer-events: none;
   animation: flyUp 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   z-index: 100;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
 }
 
 @keyframes flyUp {
