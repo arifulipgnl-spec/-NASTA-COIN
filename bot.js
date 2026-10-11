@@ -51,12 +51,15 @@ if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_TELEGRAM_BOT_TOKEN_FROM_BOTFATHER') {
       const refCode = match[1] ? match[1].trim() : '';
 
       let welcomeText = `👋 Hello, *${firstName}*!\n\n` +
-        `🚀 Welcome to *NASTA Coin ($NASTA)* Ecosystem on TON Blockchain!\n\n` +
-        `🪙 *Tap to Earn:* Mine $NASTA tokens by tapping the coin.\n` +
-        `⚡ *Cloud Mining:* Activate 24h passive mining on TON.\n` +
-        `👥 *Invite Frens:* Earn up to +25,000 $NASTA per referral.\n` +
-        `💎 *TON Wallet:* Connect Tonkeeper & prepare for token launch!\n\n` +
-        `👇 Tap the button below to start playing now!`;
+        `🚀 Welcome to the official *NASTA Coin ($NASTA)* Ecosystem on TON Blockchain!\n\n` +
+        `🌟 *What you can do in NASTA Coin:*\n` +
+        `🪙 *Tap Arena:* Tap the coin to mine $NASTA in-game tokens\n` +
+        `🎰 *Lucky Arcade:* Spin the Fortune Wheel for daily boosters & jackpots\n` +
+        `⚡ *Hardware Lab:* Upgrade Multi-Tap, Energy Capacity & Auto-Mining Bot\n` +
+        `⛏️ *Cloud Mining:* Activate 24/7 passive yield on TON infrastructure\n` +
+        `👥 *Frens Tribe:* Invite friends to build your mining guild\n` +
+        `💎 *TON Wallet:* Connect Tonkeeper or Telegram @wallet for Season 1 Airdrop\n\n` +
+        `👇 Tap the button below to launch the Mini App!`;
 
       const options = {
         parse_mode: 'Markdown',
@@ -64,16 +67,16 @@ if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_TELEGRAM_BOT_TOKEN_FROM_BOTFATHER') {
           inline_keyboard: [
             [
               {
-                text: '🪙 Play NASTA Coin ($NASTA)',
+                text: '🪙 Launch NASTA Coin App',
                 web_app: { url: WEB_APP_URL }
               }
             ],
             [
-              { text: '📢 Official Channel', url: 'https://t.me/NASTACoin' },
-              { text: '💬 Community Group', url: 'https://t.me/NASTACommunity' }
+              { text: '📖 Game Guide', callback_data: 'cmd_help' },
+              { text: '🗺️ Roadmap', callback_data: 'cmd_roadmap' }
             ],
             [
-              { text: '🌐 Official Website', url: 'https://nastacoin.org' }
+              { text: '📜 Fair Play Rules', callback_data: 'cmd_rules' }
             ]
           ]
         }
@@ -108,27 +111,110 @@ if (BOT_TOKEN && BOT_TOKEN !== 'YOUR_TELEGRAM_BOT_TOKEN_FROM_BOTFATHER') {
 
     // /help command
     bot.onText(/\/help/, (msg) => {
-      const chatId = msg.chat.id;
-      const helpText = `📖 *NASTA Coin Bot Commands:*\n\n` +
-        `/start - Launch NASTA Coin Mini App\n` +
-        `/help - Show this guide\n` +
-        `/stats - Check your miner stats\n\n` +
-        `For support, contact @NASTASupport.`;
-      
-      bot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
+      sendHelpMessage(msg.chat.id);
+    });
+
+    // /roadmap command
+    bot.onText(/\/roadmap/, (msg) => {
+      sendRoadmapMessage(msg.chat.id);
+    });
+
+    // /rules command
+    bot.onText(/\/rules/, (msg) => {
+      sendRulesMessage(msg.chat.id);
     });
 
     // /stats command
     bot.onText(/\/stats/, (msg) => {
       const chatId = msg.chat.id;
-      const statsText = `📊 *NASTA Network Stats:*\n\n` +
-        `• Token: *$NASTA*\n` +
-        `• Blockchain: *TON (The Open Network)*\n` +
-        `• Total Holders: *1,200,000+*\n` +
-        `• Status: *Airdrop & Mining Phase*`;
+      const statsText = `📊 *NASTA Coin Ecosystem Status:*\n\n` +
+        `• Ticker: *$NASTA*\n` +
+        `• Network: *The Open Network (TON)*\n` +
+        `• Phase: *Season 1 Community Fair Distribution*\n` +
+        `• Core Features: *Tap Arena, Lucky Wheel, Hardware Lab, Cloud Mining*\n` +
+        `• Contract: *Verified TON Jetton Smart Contract (TGE Phase)*\n\n` +
+        `Stay active daily to maximize your Season 1 airdrop points!`;
       
-      bot.sendMessage(chatId, statsText, { parse_mode: 'Markdown' });
+      bot.sendMessage(chatId, statsText, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🪙 Open Mini App', web_app: { url: WEB_APP_URL } }]
+          ]
+        }
+      });
     });
+
+    // Handle Inline Callbacks
+    bot.on('callback_query', (query) => {
+      const chatId = query.message?.chat?.id;
+      const data = query.data;
+      bot.answerCallbackQuery(query.id).catch(() => {});
+
+      if (!chatId) return;
+      if (data === 'cmd_help') sendHelpMessage(chatId);
+      else if (data === 'cmd_roadmap') sendRoadmapMessage(chatId);
+      else if (data === 'cmd_rules') sendRulesMessage(chatId);
+    });
+
+    function sendHelpMessage(chatId) {
+      const helpText = `📖 *NASTA Coin — Player Guide & FAQs*\n\n` +
+        `*1. How to Mine $NASTA Points?*\n` +
+        `Open the Mini App and tap the central coin in the Tap Arena. Each tap consumes 1 energy and gives points.\n\n` +
+        `*2. Lucky Arcade (Fortune Wheel)*\n` +
+        `Spin the wheel every 12 hours for instant bonuses, energy refills, or 2X multipliers.\n\n` +
+        `*3. Hardware Upgrades*\n` +
+        `Spend mined $NASTA to level up Multi-Tap, Max Energy, and Auto-Mining Bot.\n\n` +
+        `*4. Daily Streak*\n` +
+        `Check in every 24 hours to claim escalating streak bonuses from Day 1 to Day 7.\n\n` +
+        `*5. TON Wallet Linking*\n` +
+        `Link your Tonkeeper or Telegram @wallet to prepare your address for the Season 1 Airdrop.`;
+
+      bot.sendMessage(chatId, helpText, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🪙 Play Now', web_app: { url: WEB_APP_URL } }]
+          ]
+        }
+      });
+    }
+
+    function sendRoadmapMessage(chatId) {
+      const roadmapText = `🗺️ *NASTA Coin Project Roadmap:*\n\n` +
+        `*Phase 1: Genesis & Community Mining (Current)*\n` +
+        `• Telegram Mini App & Tap Engine Launch\n` +
+        `• Lucky Fortune Wheel Mini-Game\n` +
+        `• Hardware Lab Upgrades & Cloud Mining Yield\n` +
+        `• TON Connect Multi-Wallet Integration\n\n` +
+        `*Phase 2: Ecosystem Expansion*\n` +
+        `• Guilds & Community Mining Tournaments\n` +
+        `• On-chain Snapshot for Active Pioneers\n` +
+        `• Security Audit & Smart Contract Verification\n\n` +
+        `*Phase 3: TGE & DEX Listing*\n` +
+        `• Official $NASTA Token Minting on TON\n` +
+        `• Community Airdrop Distribution\n` +
+        `• DeDust & STON.fi DEX Liquidity Pool Launch`;
+
+      bot.sendMessage(chatId, roadmapText, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🪙 Launch App', web_app: { url: WEB_APP_URL } }]
+          ]
+        }
+      });
+    }
+
+    function sendRulesMessage(chatId) {
+      const rulesText = `📜 *NASTA Fair Play & Community Rules:*\n\n` +
+        `1. One account per Telegram user.\n` +
+        `2. Emulators, click-bots, and automated scripts are strictly prohibited and flagged by our anti-cheat heuristics.\n` +
+        `3. Only legitimate, active community members will be eligible for the Season 1 Airdrop.\n` +
+        `4. Respect community guidelines and enjoy the game!`;
+
+      bot.sendMessage(chatId, rulesText, { parse_mode: 'Markdown' });
+    }
 
     // Handle bot errors gracefully
     bot.on('polling_error', (error) => {
