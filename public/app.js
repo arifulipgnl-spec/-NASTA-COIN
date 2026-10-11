@@ -1087,7 +1087,7 @@
   }
 
   // --- Rewarded Ads System (Official Telegram Adsgram & Smart Fallback) ---
-  const DEFAULT_ADSGRAM_BLOCK_ID = "53310";
+  const DEFAULT_ADSGRAM_BLOCK_ID = "50487";
   let adsgramController = null;
 
   function getAdsgramController() {
