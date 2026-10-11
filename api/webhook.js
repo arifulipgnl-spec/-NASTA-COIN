@@ -31,38 +31,68 @@ module.exports = async (req, res) => {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const webAppUrl = process.env.WEB_APP_URL || `${proto}://${host}`;
 
-  // Handle /start command
-  if (text.startsWith('/start')) {
-    const welcomeText = `👋 Hello, *${firstName}*!\n\n` +
-      `🚀 Welcome to *NASTA Coin ($NASTA)* Ecosystem on TON Blockchain!\n\n` +
-      `🪙 *Tap to Earn:* Mine $NASTA tokens by tapping the coin.\n` +
-      `⚡ *Cloud Mining:* Activate 24h passive mining on TON.\n` +
-      `👥 *Invite Frens:* Earn up to +25,000 $NASTA per referral.\n` +
-      `💎 *TON Wallet:* Connect Tonkeeper & prepare for token launch!\n\n` +
-      `👇 Tap the button below to start playing now!`;
+  // Handle commands
+  let replyText = '';
+  let replyButtons = [];
 
-    const payload = JSON.stringify({
-      chat_id: chatId,
-      text: welcomeText,
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: '🪙 Play NASTA Coin ($NASTA)',
-              web_app: { url: webAppUrl }
-            }
-          ],
-          [
-            { text: '📢 Official Channel', url: 'https://t.me/NASTACoin' },
-            { text: '💬 Community Group', url: 'https://t.me/NASTACommunity' }
-          ],
-          [
-            { text: '🌐 Official Website', url: 'https://nastacoin.org' }
-          ]
-        ]
-      }
-    });
+  if (text.startsWith('/start')) {
+    replyText = `👋 Hello, *${firstName}*!\n\n` +
+      `🚀 Welcome to the official *NASTA Coin ($NASTA)* Ecosystem on TON Blockchain!\n\n` +
+      `🌟 *Core Features:*\n` +
+      `🪙 *Tap Arena:* Mine in-game $NASTA points\n` +
+      `🎰 *Lucky Arcade:* Spin the Fortune Wheel for daily boosts\n` +
+      `⚡ *Hardware Lab:* Upgrade Multi-Tap, Capacity & Auto-Mining Bot\n` +
+      `⛏️ *Cloud Mining:* 24/7 passive yield on TON\n` +
+      `💎 *TON Wallet:* Connect Tonkeeper & prepare for Season 1 Airdrop\n\n` +
+      `👇 Tap below to launch the Mini App!`;
+
+    replyButtons = [
+      [{ text: '🪙 Launch NASTA Coin App', web_app: { url: webAppUrl } }],
+      [
+        { text: '📖 Game Guide', callback_data: 'cmd_help' },
+        { text: '🗺️ Roadmap', callback_data: 'cmd_roadmap' }
+      ]
+    ];
+  } else if (text.startsWith('/help')) {
+    replyText = `📖 *NASTA Coin — Quick Guide:*\n\n` +
+      `• *Tap Arena:* Tap to mine points. 1 tap = 1 energy.\n` +
+      `• *Lucky Wheel:* Free spins daily in the Arcade.\n` +
+      `• *Hardware Lab:* Upgrade Multi-Tap & Energy capacity with earned points.\n` +
+      `• *Wallet:* Link Tonkeeper to register your airdrop address.`;
+    replyButtons = [
+      [{ text: '🪙 Launch App', web_app: { url: webAppUrl } }]
+    ];
+  } else if (text.startsWith('/roadmap')) {
+    replyText = `🗺️ *NASTA Coin Roadmap:*\n\n` +
+      `• *Phase 1:* Tap Arena & Fortune Wheel Arcade (Active)\n` +
+      `• *Phase 2:* Community Airdrop Snapshot & Guild Tournaments\n` +
+      `• *Phase 3:* $NASTA Token Minting & DEX Liquidity on TON`;
+    replyButtons = [
+      [{ text: '🪙 Launch App', web_app: { url: webAppUrl } }]
+    ];
+  } else if (text.startsWith('/stats')) {
+    replyText = `📊 *NASTA Coin Status:*\n\n` +
+      `• Token: *$NASTA*\n` +
+      `• Network: *The Open Network (TON)*\n` +
+      `• Phase: *Season 1 Community Airdrop*`;
+    replyButtons = [
+      [{ text: '🪙 Launch App', web_app: { url: webAppUrl } }]
+    ];
+  } else {
+    replyText = `👋 Hello! Tap below to launch NASTA Coin or send /help for instructions.`;
+    replyButtons = [
+      [{ text: '🪙 Launch NASTA Coin App', web_app: { url: webAppUrl } }]
+    ];
+  }
+
+  const payload = JSON.stringify({
+    chat_id: chatId,
+    text: replyText,
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: replyButtons
+    }
+  });
 
     const telegramReq = https.request(
       `https://api.telegram.org/bot${token}/sendMessage`,
@@ -89,9 +119,5 @@ module.exports = async (req, res) => {
 
     telegramReq.write(payload);
     telegramReq.end();
-    return;
-  }
-
-  // Fallback response for other messages
-  return res.status(200).json({ ok: true });
 };
+
