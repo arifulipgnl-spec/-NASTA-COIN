@@ -89,8 +89,8 @@
             <span class="balance-symbol">$NASTA</span>
           </div>
           <div class="balance-sub">
-            <span class="usd-value" id="balanceUsdDisplay">≈ $0.00 USD</span>
-            <span class="price-chip">1 $NASTA = $0.024 USDT</span>
+            <span class="phase-chip">⚡ Season 1 Airdrop Mining</span>
+            <span class="network-chip">💎 TON Blockchain Ecosystem</span>
           </div>
         </div>
 
@@ -131,16 +131,85 @@
           <div class="cooldown-badge" id="cooldownBadge" style="display: none;">
             <span>⏳</span> <strong id="cooldownTimerText">30:00</strong>
           </div>
-          <button class="boost-chip" id="watchAdQuickBtn" style="background: rgba(2, 132, 199, 0.25); border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;">
-            <span>📺</span> +5 Ad
+          <button class="boost-chip" id="refillEnergyBtn" title="Instant Energy Refill">
+            <span>⚡</span> Refill
           </button>
           <button class="boost-chip" id="turboBoostBtn">
-            <span>🔥</span> Boost
+            <span>🔥</span> Boost 2X
           </button>
         </div>
       </section>
 
-      <!-- ==================== TAB 2: MINING SCREEN ==================== -->
+      <!-- ==================== TAB 2: ARCADE SCREEN (LUCKY WHEEL) ==================== -->
+      <section id="tab-arcade" class="tab-panel">
+        <div class="arcade-hero-card">
+          <div class="arcade-hero-badge">🎰 NASTA ARCADE</div>
+          <h2>Lucky Fortune Wheel</h2>
+          <p>Spin the wheel for bonus $NASTA, 2X tap boosters, energy refills, & jackpots!</p>
+          
+          <div class="arcade-tickets-bar">
+            <div class="tickets-pill">
+              <span>🎟️</span>
+              <span>Available Spins: <strong id="spinsAvailableCount">3</strong></span>
+            </div>
+            <div class="reset-countdown" id="spinResetNotice">
+              <span>⏳</span> Next Free: <strong id="spinResetTimer">12:00:00</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wheel Canvas & Spinner Arena -->
+        <div class="wheel-arena-card">
+          <div class="wheel-container-wrapper">
+            <div class="wheel-pointer-needle">▼</div>
+            <div class="wheel-outer-glow"></div>
+            <canvas id="wheelCanvas" width="300" height="300" class="interactive-wheel-canvas"></canvas>
+            <div class="wheel-center-cap" id="wheelCenterSpinBtn">
+              <img src="assets/coin.png" alt="Spin">
+              <span>SPIN</span>
+            </div>
+          </div>
+
+          <div class="wheel-action-row">
+            <button class="btn btn-gold btn-full spin-wheel-btn" id="spinWheelBtn">
+              <span>🎯</span> Spin the Wheel (Free)
+            </button>
+          </div>
+
+          <div class="wheel-bonus-options">
+            <button class="bonus-opt-btn" id="buySpinCoinBtn">
+              <span>🪙</span> +1 Spin (100 $NASTA)
+            </button>
+            <button class="bonus-opt-btn sponsor-btn" id="watchAdSpinBtn">
+              <span>📺</span> +1 Spin (Sponsor Video)
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Wheel Wins -->
+        <div class="recent-wins-card">
+          <div class="recent-wins-header">
+            <span>🏆 Recent Jackpot Winners</span>
+            <span class="live-dot">● LIVE</span>
+          </div>
+          <div class="recent-wins-list" id="recentWinsList">
+            <div class="win-item">
+              <span class="win-user">@alex_ton</span>
+              <span class="win-prize">+1,000 $NASTA Jackpot! 🌟</span>
+            </div>
+            <div class="win-item">
+              <span class="win-user">@crypto_hawk</span>
+              <span class="win-prize">2X Tap Booster (15 Min) 🔥</span>
+            </div>
+            <div class="win-item">
+              <span class="win-user">@ton_pioneer</span>
+              <span class="win-prize">+500 $NASTA 💎</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: HARDWARE LAB & MINING SCREEN ==================== -->
       <section id="tab-mining" class="tab-panel">
         <!-- Turbine Live Status Card -->
         <div class="mining-rig-card">
@@ -182,95 +251,91 @@
           </div>
         </div>
 
-        <!-- Official Tonkeeper Address Notice -->
-        <div class="treasury-card">
-          <div class="treasury-header">
-            <div class="treasury-badge">💎 Official TON Receiver</div>
-            <span class="verified-tag">Verified On-Chain</span>
-          </div>
-          <p class="treasury-info">All mining upgrades and deposits route to the official Tonkeeper wallet:</p>
-          <div class="address-copy-box">
-            <code class="ton-address" id="ownerAddressText">UQCEkkk4CCNo48fudDqX12UDxnSehnEHd-UFWzP5zH9w-hIT</code>
-            <button class="copy-icon-btn" id="copyAddressBtn" title="Copy Address">📋</button>
-          </div>
-        </div>
-
-        <!-- Mining Upgrades List -->
+        <!-- In-Game Hardware Upgrades Shop -->
         <div class="section-title">
-          <h3>Purchase Mining Speed (USDT / TON)</h3>
-          <p>Boost your passive hourly mining yield permanently</p>
+          <h3>⚡ Hardware Lab & Boosters</h3>
+          <p>Upgrade your gear using earned $NASTA tokens</p>
         </div>
 
-        <div class="plans-list">
-          <!-- Plan 1 -->
-          <div class="plan-card" data-plan="NORMAL">
-            <div class="plan-header">
-              <div class="plan-icon plan-cyan">⚡</div>
-              <div class="plan-title-block">
-                <h4>Normal Speed</h4>
-                <span class="plan-badge badge-cyan">Starter Tier</span>
-              </div>
-              <div class="plan-price">
-                <strong>1.0 USDT</strong>
-                <small>≈ 0.182 TON</small>
-              </div>
+        <div class="upgrades-grid">
+          <!-- Booster 1: Multi-Tap -->
+          <div class="upgrade-card" id="cardUpgradeMultitap">
+            <div class="upgrade-icon">👆</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Multi-Tap Power</div>
+              <div class="upgrade-desc">Earn +1 extra token per tap</div>
+              <div class="upgrade-level" id="levelMultitap">Lvl 1 (1x)</div>
             </div>
-            <div class="plan-metrics">
-              <div class="metric"><strong>+50</strong> $NASTA / hr</div>
-              <div class="metric"><strong>1,200</strong> / 24 hours</div>
-              <div class="metric owned">Owned: <span id="normalOwnedCount">0</span></div>
-            </div>
-            <button class="btn btn-outline buy-plan-btn" data-plan="NORMAL" data-price="1.0" data-ton="0.182" data-speed="50">
-              Upgrade with Tonkeeper
+            <button class="upgrade-action-btn" id="buyUpgradeMultitap" data-upgrade="multitap">
+              <span class="upgrade-cost" id="costMultitap">200</span>
+              <small>$NASTA</small>
             </button>
           </div>
 
-          <!-- Plan 2 -->
-          <div class="plan-card popular" data-plan="HIGH">
-            <div class="plan-popular-ribbon">🔥 Popular Tier</div>
-            <div class="plan-header">
-              <div class="plan-icon plan-purple">🚀</div>
-              <div class="plan-title-block">
-                <h4>High Speed</h4>
-                <span class="plan-badge badge-purple">Advanced Miner</span>
-              </div>
-              <div class="plan-price">
-                <strong>2.0 USDT</strong>
-                <small>≈ 0.364 TON</small>
-              </div>
+          <!-- Booster 2: Energy Tank -->
+          <div class="upgrade-card" id="cardUpgradeTank">
+            <div class="upgrade-icon">⚡</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Energy Tank</div>
+              <div class="upgrade-desc">+25 Max energy capacity</div>
+              <div class="upgrade-level" id="levelTank">Lvl 1 (30 Max)</div>
             </div>
-            <div class="plan-metrics">
-              <div class="metric"><strong>+100</strong> $NASTA / hr</div>
-              <div class="metric"><strong>2,400</strong> / 24 hours</div>
-              <div class="metric owned">Owned: <span id="highOwnedCount">0</span></div>
-            </div>
-            <button class="btn btn-primary buy-plan-btn" data-plan="HIGH" data-price="2.0" data-ton="0.364" data-speed="100">
-              Upgrade with Tonkeeper
+            <button class="upgrade-action-btn" id="buyUpgradeTank" data-upgrade="tank">
+              <span class="upgrade-cost" id="costTank">300</span>
+              <small>$NASTA</small>
             </button>
           </div>
 
-          <!-- Plan 3 -->
-          <div class="plan-card" data-plan="ULTRA">
-            <div class="plan-header">
-              <div class="plan-icon plan-emerald">💎</div>
-              <div class="plan-title-block">
-                <h4>Ultra Power</h4>
-                <span class="plan-badge badge-emerald">Max Power</span>
-              </div>
-              <div class="plan-price">
-                <strong>4.0 USDT</strong>
-                <small>≈ 0.728 TON</small>
-              </div>
+          <!-- Booster 3: Recharge Booster -->
+          <div class="upgrade-card" id="cardUpgradeRecharge">
+            <div class="upgrade-icon">🔋</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Fast Cooling</div>
+              <div class="upgrade-desc">Regenerate taps 2x faster</div>
+              <div class="upgrade-level" id="levelRecharge">Lvl 1 (Standard)</div>
             </div>
-            <div class="plan-metrics">
-              <div class="metric"><strong>+200</strong> $NASTA / hr</div>
-              <div class="metric"><strong>4,800</strong> / 24 hours</div>
-              <div class="metric owned">Owned: <span id="ultraOwnedCount">0</span></div>
-            </div>
-            <button class="btn btn-outline buy-plan-btn" data-plan="ULTRA" data-price="4.0" data-ton="0.728" data-speed="200">
-              Upgrade with Tonkeeper
+            <button class="upgrade-action-btn" id="buyUpgradeRecharge" data-upgrade="recharge">
+              <span class="upgrade-cost" id="costRecharge">500</span>
+              <small>$NASTA</small>
             </button>
           </div>
+
+          <!-- Booster 4: Auto-Mining Bot -->
+          <div class="upgrade-card" id="cardUpgradeBot">
+            <div class="upgrade-icon">🤖</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Auto-Tap Bot</div>
+              <div class="upgrade-desc">Mines while you are offline (up to 3h)</div>
+              <div class="upgrade-level" id="levelBot">Locked</div>
+            </div>
+            <button class="upgrade-action-btn" id="buyUpgradeBot" data-upgrade="bot">
+              <span class="upgrade-cost" id="costBot">1,000</span>
+              <small>$NASTA</small>
+            </button>
+          </div>
+
+          <!-- Booster 5: Turbine Overclock -->
+          <div class="upgrade-card" id="cardUpgradeTurbine">
+            <div class="upgrade-icon">🚀</div>
+            <div class="upgrade-info">
+              <div class="upgrade-name">Turbine Overclock</div>
+              <div class="upgrade-desc">+25 $NASTA/hr passive cloud yield</div>
+              <div class="upgrade-level" id="levelTurbine">Lvl 0 (+0/hr)</div>
+            </div>
+            <button class="upgrade-action-btn" id="buyUpgradeTurbine" data-upgrade="turbine">
+              <span class="upgrade-cost" id="costTurbine">750</span>
+              <small>$NASTA</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Project Transparency & Fair Distribution Notice -->
+        <div class="treasury-card" style="margin-top: 18px;">
+          <div class="treasury-header">
+            <div class="treasury-badge">💎 TON Verified Roadmap</div>
+            <span class="verified-tag">100% Fair Play</span>
+          </div>
+          <p class="treasury-info">All $NASTA points are mined 100% via community engagement. No paid pre-sale, no hidden fees. Eligible for Season 1 Airdrop upon token launch!</p>
         </div>
       </section>
 
@@ -471,9 +536,13 @@
         <span class="nav-icon">🪙</span>
         <span class="nav-label">Tap</span>
       </button>
+      <button class="nav-item" data-tab="tab-arcade">
+        <span class="nav-icon">🎰</span>
+        <span class="nav-label">Arcade</span>
+      </button>
       <button class="nav-item" data-tab="tab-mining">
         <span class="nav-icon">⚡</span>
-        <span class="nav-label">Mining</span>
+        <span class="nav-label">Lab</span>
       </button>
       <button class="nav-item" data-tab="tab-tasks">
         <span class="nav-icon">📋</span>
@@ -483,10 +552,6 @@
         <span class="nav-icon">👥</span>
         <span class="nav-label">Frens</span>
       </button>
-      <button class="nav-item" data-tab="tab-leaderboard">
-        <span class="nav-icon">🏆</span>
-        <span class="nav-label">Ranks</span>
-      </button>
       <button class="nav-item" data-tab="tab-wallet">
         <span class="nav-icon">💼</span>
         <span class="nav-label">Wallet</span>
@@ -494,51 +559,6 @@
     </nav>
 
     <!-- ==================== MODALS & DIALOGS ==================== -->
-
-    <!-- Tonkeeper Payment Modal -->
-    <div class="modal-overlay" id="tonkeeperModal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>💎 Upgrade via Tonkeeper</h3>
-          <button class="close-modal-btn" id="closeTonModalBtn">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="selected-plan-summary" id="modalPlanSummary">
-            <!-- Populated via JS -->
-          </div>
-
-          <div class="payment-steps">
-            <div class="step-line">
-              <span class="step-num">1</span>
-              <span>Send exact TON to Owner Wallet Address:</span>
-            </div>
-            <div class="address-copy-box">
-              <code class="ton-address">UQCEkkk4CCNo48fudDqX12UDxnSehnEHd-UFWzP5zH9w-hIT</code>
-              <button class="copy-icon-btn" id="modalCopyAddressBtn">📋</button>
-            </div>
-
-            <div class="step-line">
-              <span class="step-num">2</span>
-              <span>Open Tonkeeper App with 1-click:</span>
-            </div>
-            <a href="#" target="_blank" class="btn btn-tonkeeper btn-full" id="openTonkeeperLink">
-              <span>💎</span> Open in Tonkeeper App
-            </a>
-
-            <div class="step-line">
-              <span class="step-num">3</span>
-              <span>Paste Transaction Hash from your receipt:</span>
-            </div>
-            <input type="text" id="txHashInput" class="form-input" placeholder="Paste full TON Transaction Hash...">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary btn-full" id="verifyTxBtn">
-            <span>🛡️</span> Verify & Activate Speed
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- Daily Streak Modal -->
     <div class="modal-overlay" id="streakModal">
@@ -745,39 +765,30 @@
       </div>
     </div>
 
-    <!-- Rewarded Ad Modal -->
-    <div class="modal-overlay" id="rewardedAdModal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="background:var(--accent-gold); color:#070a12; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">AD</span>
-            <h3 style="font-size:15px;">Sponsored Rewarded Ad</h3>
-          </div>
-          <button class="close-modal-btn" id="closeAdModalBtn" style="display:none;">✕</button>
+    <!-- Fortune Wheel Prize Modal -->
+    <div class="modal-overlay" id="spinPrizeModal">
+      <div class="modal-card prize-modal-card text-center">
+        <div class="prize-modal-icon" id="prizeModalIcon">🌟</div>
+        <h3 id="prizeModalTitle">Jackpot Win!</h3>
+        <p id="prizeModalDesc">You won +1,000 $NASTA Points from the Lucky Wheel!</p>
+        <button class="btn btn-gold btn-full" id="closePrizeModalBtn" style="margin-top:16px;">
+          <span>🎉</span> Awesome! Claim
+        </button>
+      </div>
+    </div>
+
+    <!-- Offline Earnings Modal -->
+    <div class="modal-overlay" id="offlineEarningsModal">
+      <div class="modal-card offline-modal-card text-center">
+        <div class="offline-bot-icon">🤖</div>
+        <h3>Welcome Back Pioneer!</h3>
+        <p>Your Auto-Tap Bot was mining while you were away.</p>
+        <div class="offline-earned-amount">
+          +<span id="offlineEarnedTokens">0</span> $NASTA
         </div>
-        <div class="modal-body text-center">
-          <div class="ad-video-simulation-card">
-            <div class="ad-sponsor-badge">📺 Sponsored Rewarded Video</div>
-            <div class="ad-video-screen">
-              <div class="ad-sponsor-logo">
-                <img src="assets/coin.png" alt="Sponsor" class="sponsor-coin-pulse">
-                <h4>NASTA ECOSYSTEM</h4>
-                <p>The Future of TON Tap-to-Earn</p>
-              </div>
-            </div>
-            <div class="ad-timer-bar-wrap">
-              <div class="ad-timer-fill" id="adTimerFill"></div>
-            </div>
-            <div class="ad-countdown-info">
-              Reward unlocks in: <strong id="adCountdownText">5s</strong>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary btn-full" id="claimAdRewardBtn" style="display:none;">
-            🎉 Claim +5 $NASTA Coin
-          </button>
-        </div>
+        <button class="btn btn-primary btn-full" id="claimOfflineEarnedBtn" style="margin-top:14px;">
+          <span>⚡</span> Collect Mined Tokens
+        </button>
       </div>
     </div>
 

@@ -36,13 +36,8 @@
     }
   }
 
-  // --- Treasury Constants ---
-  const OWNER_TONKEEPER_ADDRESS = "UQCEkkk4CCNo48fudDqX12UDxnSehnEHd-UFWzP5zH9w-hIT";
-  const NASTA_USD_PRICE = 0.024;
-  const TON_USD_PRICE = 5.50;
-
   // --- Storage Key ---
-  const STORAGE_KEY = 'nasta_coin_user_state_v1';
+  const STORAGE_KEY = 'nasta_coin_user_state_v2';
 
   // --- Default State ---
   const defaultState = {
@@ -50,10 +45,21 @@
     balance: 0.0,
     energy: 30,
     maxEnergy: 30,
-    cooldownEndTime: null, // Timestamp (ms) when 30-min cooldown ends
+    cooldownEndTime: null, // Timestamp (ms) when cooldown ends
     lastEnergyTick: Date.now(),
     tapMultiplier: 1,
     turboActive: false,
+    // Hardware Lab Boosters
+    multitapLevel: 1,
+    tankLevel: 1,
+    rechargeLevel: 1,
+    autoBotLevel: 0,
+    turbineLevel: 0,
+    lastOfflineCheck: Date.now(),
+    // Arcade / Lucky Fortune Wheel
+    spinsAvailable: 3,
+    lastSpinResetTime: Date.now(),
+    // Mining Rig
     miningSpeedPerHour: 0,
     normalMinersCount: 0,
     highMinersCount: 0,
@@ -242,55 +248,36 @@
   // --- Task Definitions ---
   const tasksConfig = [
     {
-      id: 'task_ad',
-      title: 'Watch Rewarded Ad (+5 $NASTA)',
-      desc: 'Watch short video sponsor to earn 5 coins each time. Unlimited!',
-      reward: 5,
-      icon: '📺',
-      action: 'ad'
-    },
-    {
       id: 'task_streak',
-      title: 'Daily Check-in (10 $NASTA)',
+      title: 'Daily Check-in (10-10,000 $NASTA)',
       desc: 'Claim your consecutive daily reward every 24 hours.',
       reward: 10,
       icon: '🔥',
       action: 'streak'
     },
     {
-      id: 'task_tg_channel',
-      title: 'Join Official NASTA Telegram',
-      desc: 'Subscribe to @NASTACoin channel for official news.',
-      reward: 500,
-      icon: '📢',
-      link: 'https://t.me/NASTACoin',
-      action: 'link'
+      id: 'task_spin',
+      title: 'Lucky Wheel Challenger',
+      desc: 'Spin the Fortune Wheel in the Arcade today.',
+      reward: 150,
+      icon: '🎰',
+      action: 'arcade'
     },
     {
-      id: 'task_youtube',
-      title: 'Subscribe to NASTA YouTube',
-      desc: 'Watch & subscribe to the NASTA official YouTube channel.',
-      reward: 500,
-      icon: '▶️',
-      link: 'https://youtube.com/@NASTACoin',
-      action: 'link'
+      id: 'task_upgrade',
+      title: 'Hardware Lab Engineer',
+      desc: 'Level up any booster in the Hardware Lab.',
+      reward: 200,
+      icon: '⚡',
+      action: 'lab'
     },
     {
-      id: 'task_twitter',
-      title: 'Follow NASTA on X (Twitter)',
-      desc: 'Follow @NASTA_TON on X and turn on notification bell.',
-      reward: 500,
-      icon: '🐦',
-      link: 'https://x.com/NASTA_TON',
-      action: 'link'
-    },
-    {
-      id: 'task_invite_frens',
-      title: 'Invite 3 Frens (+1,000 $NASTA)',
-      desc: 'Share your referral link with 3 friends to claim extra bonus.',
-      reward: 1000,
-      icon: '👥',
-      action: 'frens'
+      id: 'task_tap30',
+      title: 'Pioneer Tapper (30 Taps)',
+      desc: 'Mine 30 coins in the Tap Arena.',
+      reward: 100,
+      icon: '👆',
+      action: 'tap'
     },
     {
       id: 'task_ton_wallet',
@@ -299,6 +286,14 @@
       reward: 1000,
       icon: '💎',
       action: 'wallet'
+    },
+    {
+      id: 'task_invite_frens',
+      title: 'Invite a Fren (+1,000 $NASTA)',
+      desc: 'Share your referral link with a friend to grow your guild.',
+      reward: 1000,
+      icon: '👥',
+      action: 'frens'
     },
     {
       id: 'task_multisig',
@@ -408,8 +403,7 @@
   function updateUI() {
     // 1. Balance
     balanceDisplay.textContent = formatNumber(state.balance);
-    const usd = (state.balance * NASTA_USD_PRICE).toFixed(2);
-    balanceUsdDisplay.textContent = `≈ $${usd} USD`;
+    if (balanceUsdDisplay) balanceUsdDisplay.textContent = '⚡ Season 1 Airdrop Mining';
 
     // 2. League
     const currentLg = getLeague(state.balance);
@@ -449,9 +443,9 @@
     // 4. Mining
     miningSpeedDisplay.textContent = `+${state.miningSpeedPerHour} / hr`;
     totalMinedDisplay.textContent = `${formatNumber(state.totalMined)} $NASTA`;
-    normalOwnedCount.textContent = state.normalMinersCount;
-    highOwnedCount.textContent = state.highMinersCount;
-    ultraOwnedCount.textContent = state.ultraMinersCount;
+    if (normalOwnedCount) normalOwnedCount.textContent = state.normalMinersCount;
+    if (highOwnedCount) highOwnedCount.textContent = state.highMinersCount;
+    if (ultraOwnedCount) ultraOwnedCount.textContent = state.ultraMinersCount;
 
     if (state.miningSpeedPerHour > 0) {
       turbineBlades.classList.add('fast');
@@ -460,10 +454,10 @@
     }
 
     // 5. Wallet
-    walletNastaBalance.textContent = formatNumber(state.balance);
-    walletNastaUsd.textContent = `≈ $${usd}`;
-    walletTonBalance.textContent = state.tonBalance.toFixed(2);
-    walletUsdtBalance.textContent = state.usdtBalance.toFixed(2);
+    if (walletNastaBalance) walletNastaBalance.textContent = formatNumber(state.balance);
+    if (walletNastaUsd) walletNastaUsd.textContent = 'Season 1 Airdrop Points';
+    if (walletTonBalance) walletTonBalance.textContent = state.tonBalance.toFixed(2);
+    if (walletUsdtBalance) walletUsdtBalance.textContent = state.usdtBalance.toFixed(2);
 
     if (state.connectedTonWallet) {
       walletStatusTitle.textContent = `${state.connectedWalletName || 'TON Wallet'} Connected ✅`;
@@ -505,6 +499,11 @@
       updateStreakUIElements();
     }
 
+    // 10. Sync Hardware Lab button states
+    if (typeof renderHardwareUpgrades === 'function') {
+      renderHardwareUpgrades();
+    }
+
     saveState();
   }
 
@@ -525,27 +524,29 @@
 
     // Check if energy is empty
     if (state.energy <= 0) {
+      const cdMinutes = Math.max(10, 30 - ((state.rechargeLevel || 1) - 1) * 5);
       if (!state.cooldownEndTime) {
-        state.cooldownEndTime = Date.now() + 30 * 60 * 1000;
+        state.cooldownEndTime = Date.now() + cdMinutes * 60 * 1000;
         updateUI();
       }
       triggerHaptic('notification', 'warning');
-      showToast('30 Coins earned! 30-min Cooldown started ⏳', '⏳');
+      showToast(`Energy empty! Wait cooldown or tap ⚡ Refill!`, '⏳');
       return;
     }
 
-    // Decrement energy & increment balance (1 tap = 1 coin)
+    // Decrement energy & increment balance (1 tap = 1 coin * multiplier)
     const tapGain = state.turboActive ? (state.tapMultiplier * 2) : state.tapMultiplier;
     state.energy -= 1;
     state.balance += tapGain;
     state.totalTaps += 1;
 
-    // Trigger 30-min cooldown when all 30 taps are used (30 coins earned)
+    // Trigger cooldown when energy reaches 0
     if (state.energy <= 0) {
       state.energy = 0;
-      state.cooldownEndTime = Date.now() + 30 * 60 * 1000; // 30 minutes Cooldown
+      const cdMinutes = Math.max(10, 30 - ((state.rechargeLevel || 1) - 1) * 5);
+      state.cooldownEndTime = Date.now() + cdMinutes * 60 * 1000;
       triggerHaptic('notification', 'warning');
-      showToast('🎉 30 Coins earned! 30-min Cooldown started ⏳', '⏳');
+      showToast(`⚡ Energy empty! Cooldown active or tap Refill ⚡`, '⏳');
     } else {
       triggerHaptic('impact', 'medium');
     }
@@ -641,32 +642,34 @@
     let changed = false;
     const currentTime = Date.now();
 
-    // 1. Cooldown & Tap Accumulation (30 min = 30 taps -> 1 tap per 60s)
+    // 1. Cooldown & Tap Accumulation
+    const recLvl = state.rechargeLevel || 1;
+    const cdMinutes = Math.max(10, 30 - (recLvl - 1) * 5);
+    const totalCdMs = cdMinutes * 60 * 1000;
+
     if (state.cooldownEndTime) {
       if (currentTime >= state.cooldownEndTime) {
-        // 30 min Cooldown has completed!
         state.cooldownEndTime = null;
-        state.energy = 30;
+        state.energy = state.maxEnergy;
         changed = true;
-        showToast('⚡ Cooldown ended! 30 Taps ready!', '⚡');
+        showToast(`⚡ Energy restored to 100% (${state.maxEnergy} Taps)!`, '⚡');
         triggerHaptic('notification', 'success');
       } else {
-        // Still in cooldown: 30 taps accumulate over 30 mins (1 tap per 60,000 ms)
-        const totalCdMs = 30 * 60 * 1000;
         const remainingMs = state.cooldownEndTime - currentTime;
         const elapsedMs = Math.max(0, totalCdMs - remainingMs);
-        const accumulated = Math.min(30, Math.floor(elapsedMs / 60000));
+        const secPerTap = (cdMinutes * 60) / state.maxEnergy;
+        const accumulated = Math.min(state.maxEnergy, Math.floor((elapsedMs / 1000) / secPerTap));
         if (state.energy !== accumulated) {
           state.energy = accumulated;
         }
-        changed = true; // Refresh countdown display every second
+        changed = true;
       }
     } else {
-      // Not in cooldown: if energy < 30, accumulate 1 tap every 60 seconds (30 taps in 30 mins)
       if (state.energy < state.maxEnergy) {
         if (!state.lastEnergyTick) state.lastEnergyTick = currentTime;
-        if (currentTime - state.lastEnergyTick >= 60000) {
-          const added = Math.floor((currentTime - state.lastEnergyTick) / 60000);
+        const rechargeIntervalMs = Math.max(20000, 60000 / recLvl);
+        if (currentTime - state.lastEnergyTick >= rechargeIntervalMs) {
+          const added = Math.floor((currentTime - state.lastEnergyTick) / rechargeIntervalMs);
           state.energy = Math.min(state.maxEnergy, state.energy + added);
           state.lastEnergyTick = currentTime;
           changed = true;
@@ -699,87 +702,175 @@
     showToast(`Claimed mining yield! 💎`, '💎');
   });
 
-  // --- Tonkeeper Payment Modal & Flow ---
-  let selectedPlan = null;
-  const buyPlanBtns = document.querySelectorAll('.buy-plan-btn');
-  const modalPlanSummary = document.getElementById('modalPlanSummary');
-  const openTonkeeperLink = document.getElementById('openTonkeeperLink');
-  const txHashInput = document.getElementById('txHashInput');
-  const verifyTxBtn = document.getElementById('verifyTxBtn');
-
-  buyPlanBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const plan = btn.getAttribute('data-plan');
-      const priceUsdt = parseFloat(btn.getAttribute('data-price'));
-      const priceTon = parseFloat(btn.getAttribute('data-ton'));
-      const speed = parseInt(btn.getAttribute('data-speed'));
-
-      selectedPlan = { plan, priceUsdt, priceTon, speed };
-
-      modalPlanSummary.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong style="color:var(--primary-cyan); font-size:15px;">${plan} Speed Upgrade</strong>
-            <div style="font-size:11px; color:var(--text-muted);">+${speed} $NASTA / hr (Permanent)</div>
-          </div>
-          <div style="text-align:right;">
-            <strong style="color:var(--accent-gold); font-size:16px;">${priceTon} TON</strong>
-            <div style="font-size:11px; color:var(--text-muted);">(${priceUsdt} USDT)</div>
-          </div>
-        </div>
-      `;
-
-      // Generate Tonkeeper deep link
-      const nanoTon = Math.round(priceTon * 1_000_000_000);
-      const comment = encodeURIComponent(`NASTA Mining ${plan}`);
-      const tonkeeperDeepLink = `ton://transfer/${OWNER_TONKEEPER_ADDRESS}?amount=${nanoTon}&text=${comment}`;
-      openTonkeeperLink.href = tonkeeperDeepLink;
-
-      txHashInput.value = '';
-      tonkeeperModal.classList.add('active');
-      triggerHaptic('selection');
-    });
-  });
-
-  document.getElementById('closeTonModalBtn').addEventListener('click', () => {
-    tonkeeperModal.classList.remove('active');
-  });
-
-  // Anti-fraud On-Chain Tx Verification simulation
-  verifyTxBtn.addEventListener('click', () => {
-    const hash = txHashInput.value.trim();
-    if (!hash || hash.length < 10) {
-      triggerHaptic('notification', 'error');
-      showToast('Please paste a valid TON Transaction Hash!', '⚠️');
-      return;
+  // --- Hardware Lab In-Game Boosters System ---
+  const upgradesConfig = {
+    multitap: {
+      name: 'Multi-Tap Power',
+      maxLevel: 5,
+      costs: [0, 200, 500, 1200, 3000, 0],
+      getEffect: lvl => `Lvl ${lvl} (${lvl}x Tap)`
+    },
+    tank: {
+      name: 'Energy Tank',
+      maxLevel: 5,
+      costs: [0, 300, 800, 1800, 4000, 0],
+      caps: [0, 30, 60, 100, 150, 200],
+      getEffect: lvl => `Lvl ${lvl} (${[0, 30, 60, 100, 150, 200][lvl]} Max)`
+    },
+    recharge: {
+      name: 'Fast Cooling',
+      maxLevel: 4,
+      costs: [0, 500, 1500, 3500, 0],
+      getEffect: lvl => `Lvl ${lvl} (${lvl === 1 ? 'Standard' : lvl === 2 ? '1.5x Speed' : lvl === 3 ? '2x Speed' : '3x Speed'})`
+    },
+    bot: {
+      name: 'Auto-Tap Bot',
+      maxLevel: 3,
+      costs: [1000, 2500, 5000, 0],
+      getEffect: lvl => lvl === 0 ? 'Locked' : `Lvl ${lvl} (Mines up to ${lvl}h offline)`
+    },
+    turbine: {
+      name: 'Turbine Overclock',
+      maxLevel: 5,
+      costs: [750, 1800, 3800, 7500, 15000, 0],
+      speeds: [25, 50, 100, 200, 500],
+      getEffect: lvl => lvl === 0 ? 'Lvl 0 (+0/hr)' : `Lvl ${lvl} (+${[25, 50, 100, 200, 500][lvl - 1]}/hr)`
     }
+  };
 
-    if (state.usedTxHashes.includes(hash)) {
-      triggerHaptic('notification', 'error');
-      showToast('This Transaction Hash has already been used!', '❌');
-      return;
-    }
+  function renderHardwareUpgrades() {
+    // 1. Multitap
+    const mtLvl = state.multitapLevel || 1;
+    const mtCost = upgradesConfig.multitap.costs[mtLvl] || 0;
+    const mtLevelEl = document.getElementById('levelMultitap');
+    const mtCostEl = document.getElementById('costMultitap');
+    const mtBtn = document.getElementById('buyUpgradeMultitap');
+    if (mtLevelEl) mtLevelEl.textContent = upgradesConfig.multitap.getEffect(mtLvl);
+    if (mtCostEl) mtCostEl.textContent = mtLvl >= 5 ? 'MAX' : formatNumber(mtCost);
+    if (mtBtn) mtBtn.disabled = mtLvl >= 5 || state.balance < mtCost;
 
-    // Success verification
-    verifyTxBtn.disabled = true;
-    verifyTxBtn.textContent = 'Verifying on TON Blockchain...';
+    // 2. Tank
+    const tankLvl = state.tankLevel || 1;
+    const tankCost = upgradesConfig.tank.costs[tankLvl] || 0;
+    const tankLevelEl = document.getElementById('levelTank');
+    const tankCostEl = document.getElementById('costTank');
+    const tankBtn = document.getElementById('buyUpgradeTank');
+    if (tankLevelEl) tankLevelEl.textContent = upgradesConfig.tank.getEffect(tankLvl);
+    if (tankCostEl) tankCostEl.textContent = tankLvl >= 5 ? 'MAX' : formatNumber(tankCost);
+    if (tankBtn) tankBtn.disabled = tankLvl >= 5 || state.balance < tankCost;
 
-    setTimeout(() => {
-      verifyTxBtn.disabled = false;
-      verifyTxBtn.innerHTML = '<span>🛡️</span> Verify & Activate Speed';
-      
-      state.usedTxHashes.push(hash);
-      state.miningSpeedPerHour += selectedPlan.speed;
+    // 3. Recharge
+    const recLvl = state.rechargeLevel || 1;
+    const recCost = upgradesConfig.recharge.costs[recLvl] || 0;
+    const recLevelEl = document.getElementById('levelRecharge');
+    const recCostEl = document.getElementById('costRecharge');
+    const recBtn = document.getElementById('buyUpgradeRecharge');
+    if (recLevelEl) recLevelEl.textContent = upgradesConfig.recharge.getEffect(recLvl);
+    if (recCostEl) recCostEl.textContent = recLvl >= 4 ? 'MAX' : formatNumber(recCost);
+    if (recBtn) recBtn.disabled = recLvl >= 4 || state.balance < recCost;
 
-      if (selectedPlan.plan === 'NORMAL') state.normalMinersCount += 1;
-      else if (selectedPlan.plan === 'HIGH') state.highMinersCount += 1;
-      else if (selectedPlan.plan === 'ULTRA') state.ultraMinersCount += 1;
+    // 4. Auto-Bot
+    const botLvl = state.autoBotLevel || 0;
+    const botCost = upgradesConfig.bot.costs[botLvl] || 0;
+    const botLevelEl = document.getElementById('levelBot');
+    const botCostEl = document.getElementById('costBot');
+    const botBtn = document.getElementById('buyUpgradeBot');
+    if (botLevelEl) botLevelEl.textContent = upgradesConfig.bot.getEffect(botLvl);
+    if (botCostEl) botCostEl.textContent = botLvl >= 3 ? 'MAX' : formatNumber(botCost);
+    if (botBtn) botBtn.disabled = botLvl >= 3 || state.balance < botCost;
 
-      tonkeeperModal.classList.remove('active');
+    // 5. Turbine Overclock
+    const turbLvl = state.turbineLevel || 0;
+    const turbCost = upgradesConfig.turbine.costs[turbLvl] || 0;
+    const turbLevelEl = document.getElementById('levelTurbine');
+    const turbCostEl = document.getElementById('costTurbine');
+    const turbBtn = document.getElementById('buyUpgradeTurbine');
+    if (turbLevelEl) turbLevelEl.textContent = upgradesConfig.turbine.getEffect(turbLvl);
+    if (turbCostEl) turbCostEl.textContent = turbLvl >= 5 ? 'MAX' : formatNumber(turbCost);
+    if (turbBtn) turbBtn.disabled = turbLvl >= 5 || state.balance < turbCost;
+  }
+
+  function handleUpgradePurchase(type) {
+    if (type === 'multitap') {
+      const curLvl = state.multitapLevel || 1;
+      if (curLvl >= 5) return;
+      const cost = upgradesConfig.multitap.costs[curLvl];
+      if (state.balance < cost) {
+        showToast('Insufficient $NASTA points! Tap coin to earn more.', '⚠️');
+        return;
+      }
+      state.balance -= cost;
+      state.multitapLevel = curLvl + 1;
+      state.tapMultiplier = state.multitapLevel;
       triggerHaptic('notification', 'success');
-      showToast(`Speed Activated: +${selectedPlan.speed} NASTA/hr! 🚀`, '✅');
-      updateUI();
-    }, 1200);
+      showToast(`Multi-Tap Upgraded to Level ${state.multitapLevel}! 👆`, '🎉');
+    } else if (type === 'tank') {
+      const curLvl = state.tankLevel || 1;
+      if (curLvl >= 5) return;
+      const cost = upgradesConfig.tank.costs[curLvl];
+      if (state.balance < cost) {
+        showToast('Insufficient $NASTA points!', '⚠️');
+        return;
+      }
+      state.balance -= cost;
+      state.tankLevel = curLvl + 1;
+      state.maxEnergy = upgradesConfig.tank.caps[state.tankLevel];
+      state.energy = Math.min(state.maxEnergy, state.energy + 25);
+      triggerHaptic('notification', 'success');
+      showToast(`Energy Tank Upgraded to ${state.maxEnergy} Max! ⚡`, '🎉');
+    } else if (type === 'recharge') {
+      const curLvl = state.rechargeLevel || 1;
+      if (curLvl >= 4) return;
+      const cost = upgradesConfig.recharge.costs[curLvl];
+      if (state.balance < cost) {
+        showToast('Insufficient $NASTA points!', '⚠️');
+        return;
+      }
+      state.balance -= cost;
+      state.rechargeLevel = curLvl + 1;
+      triggerHaptic('notification', 'success');
+      showToast(`Fast Cooling Upgraded to Level ${state.rechargeLevel}! 🔋`, '🎉');
+    } else if (type === 'bot') {
+      const curLvl = state.autoBotLevel || 0;
+      if (curLvl >= 3) return;
+      const cost = upgradesConfig.bot.costs[curLvl];
+      if (state.balance < cost) {
+        showToast('Insufficient $NASTA points!', '⚠️');
+        return;
+      }
+      state.balance -= cost;
+      state.autoBotLevel = curLvl + 1;
+      triggerHaptic('notification', 'success');
+      showToast(`Auto-Tap Bot Level ${state.autoBotLevel} Activated! 🤖`, '🎉');
+    } else if (type === 'turbine') {
+      const curLvl = state.turbineLevel || 0;
+      if (curLvl >= 5) return;
+      const cost = upgradesConfig.turbine.costs[curLvl];
+      if (state.balance < cost) {
+        showToast('Insufficient $NASTA points!', '⚠️');
+        return;
+      }
+      state.balance -= cost;
+      state.turbineLevel = curLvl + 1;
+      state.miningSpeedPerHour += 25;
+      triggerHaptic('notification', 'success');
+      showToast(`Turbine Speed +25/hr Activated! 🚀`, '🎉');
+    }
+
+    saveState();
+    updateUI();
+    renderHardwareUpgrades();
+  }
+
+  // Attach upgrade button click listeners
+  ['buyUpgradeMultitap', 'buyUpgradeTank', 'buyUpgradeRecharge', 'buyUpgradeBot', 'buyUpgradeTurbine'].forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const upgradeType = btn.getAttribute('data-upgrade');
+        handleUpgradePurchase(upgradeType);
+      });
+    }
   });
 
   // Copy Owner Address
@@ -1066,18 +1157,30 @@
 
     if (state.completedTasks.includes(task.id)) return;
 
-    if (task.action === 'link' && task.link) {
+    if (task.action === 'arcade') {
+      const arcadeNav = document.querySelector('.nav-item[data-tab="tab-arcade"]');
+      if (arcadeNav) arcadeNav.click();
+    } else if (task.action === 'lab') {
+      const labNav = document.querySelector('.nav-item[data-tab="tab-mining"]');
+      if (labNav) labNav.click();
+    } else if (task.action === 'tap') {
+      const tapNav = document.querySelector('.nav-item[data-tab="tab-tap"]');
+      if (tapNav) tapNav.click();
+    } else if (task.action === 'frens') {
+      const frensNav = document.querySelector('.nav-item[data-tab="tab-referrals"]');
+      if (frensNav) frensNav.click();
+    } else if (task.action === 'wallet') {
+      const walletModal = document.getElementById('walletSelectModal');
+      if (walletModal) walletModal.classList.add('active');
+    } else if (task.action === 'link' && task.link) {
       if (tg?.openLink) {
         tg.openLink(task.link);
       } else {
         window.open(task.link, '_blank');
       }
-    } else if (task.action === 'ad') {
-      showRewardedAdFlow(task.reward || 5);
-      return;
     }
 
-    // Complete task
+    // Complete task & reward
     state.completedTasks.push(task.id);
     state.balance += task.reward;
     triggerHaptic('notification', 'success');
@@ -1086,7 +1189,9 @@
     updateUI();
   }
 
-  // --- Rewarded Ads System (Official Telegram Adsgram & Smart Fallback) ---
+  // ===================================================================
+  // 1. OFFICIAL ADSGRAM REWARDED ADS CONTROLLER (100% POLICY COMPLIANT)
+  // ===================================================================
   const DEFAULT_ADSGRAM_BLOCK_ID = "50487";
   let adsgramController = null;
 
@@ -1094,7 +1199,6 @@
     if (!adsgramController && window.Adsgram && DEFAULT_ADSGRAM_BLOCK_ID) {
       try {
         adsgramController = window.Adsgram.init({ blockId: DEFAULT_ADSGRAM_BLOCK_ID });
-        console.log("Adsgram controller initialized successfully with Block ID:", DEFAULT_ADSGRAM_BLOCK_ID);
       } catch (e) {
         console.warn("Adsgram initialization notice:", e);
       }
@@ -1109,106 +1213,365 @@
     }
   } catch (e) {}
 
-  const rewardedAdModal = document.getElementById('rewardedAdModal');
-  const closeAdModalBtn = document.getElementById('closeAdModalBtn');
-  const adTimerFill = document.getElementById('adTimerFill');
-  const adCountdownText = document.getElementById('adCountdownText');
-  const claimAdRewardBtn = document.getElementById('claimAdRewardBtn');
-  let adInterval = null;
-
-  function showRewardedAdFlow(rewardAmount = 5) {
+  function showRewardedAdFlow(onRewardSuccess, reason = 'bonus') {
     const controller = getAdsgramController();
 
-    // 1. If Adsgram SDK is ready inside Telegram Mini App:
     if (controller) {
-      showToast('Loading Adsgram Rewarded Video...', '📺');
+      showToast('Loading sponsor video...', '📺');
       controller.show().then((result) => {
-        state.balance += rewardAmount;
-        saveState(true);
         triggerHaptic('notification', 'success');
-        showToast(`🎉 +${rewardAmount} $NASTA Coins Earned from Ad!`, '💎');
-        updateUI();
+        if (typeof onRewardSuccess === 'function') {
+          onRewardSuccess();
+        }
       }).catch((result) => {
         triggerHaptic('notification', 'warning');
-        console.warn("Adsgram result:", result);
-        if (result && (result.error || result.description)) {
-          // If ad network was busy / empty inventory, gracefully start backup video so user still gets 5 $NASTA
-          showToast('Live ad busy, starting backup video (+5 $NASTA)...', '📺');
-          showBackupVideoModal(rewardAmount);
+        console.warn("Adsgram result notice:", result);
+        if (result && result.done) {
+          // User completed ad
+          if (typeof onRewardSuccess === 'function') onRewardSuccess();
+        } else if (result && (result.error || result.description)) {
+          showToast('No sponsor video available right now. Please try again soon!', 'ℹ️');
         } else {
-          showToast('Ad was skipped. Watch full ad for 5 NASTA!', '⚠️');
+          showToast('Video closed early. Watch full ad to claim reward!', '⚠️');
         }
       });
       return;
     }
 
-    // 2. Interactive Backup Video Player Fallback (for browser testing / offline fallback)
-    showBackupVideoModal(rewardAmount);
+    // Friendly offline notice when testing outside Telegram
+    showToast('Sponsor video network initializing. Please try again shortly!', '📺');
   }
 
-  function showBackupVideoModal(rewardAmount = 5) {
-    if (!rewardedAdModal) {
-      state.balance += rewardAmount;
-      saveState(true);
-      showToast(`+${rewardAmount} $NASTA Coins from Ad! ✨`, '🎉');
-      triggerHaptic('notification', 'success');
-      updateUI();
-      return;
+  // --- Energy Refill Booster Handler ---
+  const refillEnergyBtn = document.getElementById('refillEnergyBtn');
+  if (refillEnergyBtn) {
+    refillEnergyBtn.addEventListener('click', () => {
+      if (state.energy >= state.maxEnergy && !state.cooldownEndTime) {
+        showToast(`Energy is already full! (⚡ ${state.maxEnergy}/${state.maxEnergy})`, '⚡');
+        triggerHaptic('notification', 'warning');
+        return;
+      }
+
+      showRewardedAdFlow(() => {
+        state.energy = state.maxEnergy;
+        state.cooldownEndTime = null;
+        saveState();
+        updateUI();
+        triggerHaptic('notification', 'success');
+        showToast(`⚡ Energy 100% Refilled (${state.maxEnergy} Taps)!`, '🎉');
+      }, 'energy_refill');
+    });
+  }
+
+  // ===================================================================
+  // 2. LUCKY FORTUNE WHEEL ARCADE ENGINE
+  // ===================================================================
+  const wheelSectors = [
+    { label: '+100', sub: '$NASTA', color: '#00e5ff', textCol: '#070a12', type: 'coins', amount: 100 },
+    { label: 'Refill', sub: '⚡ 100%', color: '#f59e0b', textCol: '#070a12', type: 'energy', amount: 30 },
+    { label: '+250', sub: '$NASTA', color: '#8b5cf6', textCol: '#ffffff', type: 'coins', amount: 250 },
+    { label: '2X Boost', sub: '🔥 15m', color: '#ef4444', textCol: '#ffffff', type: 'turbo', amount: 15 },
+    { label: '+500', sub: '$NASTA', color: '#00e5ff', textCol: '#070a12', type: 'coins', amount: 500 },
+    { label: '+1 Ticket', sub: '🎟️ Spin', color: '#10b981', textCol: '#070a12', type: 'ticket', amount: 1 },
+    { label: 'JACKPOT', sub: '🌟 1,000', color: '#fcd34d', textCol: '#070a12', type: 'coins', amount: 1000 },
+    { label: '+50', sub: '$NASTA', color: '#0284c7', textCol: '#ffffff', type: 'coins', amount: 50 }
+  ];
+
+  const wheelCanvas = document.getElementById('wheelCanvas');
+  const wheelCenterSpinBtn = document.getElementById('wheelCenterSpinBtn');
+  const spinWheelBtn = document.getElementById('spinWheelBtn');
+  const buySpinCoinBtn = document.getElementById('buySpinCoinBtn');
+  const watchAdSpinBtn = document.getElementById('watchAdSpinBtn');
+  const spinsAvailableCount = document.getElementById('spinsAvailableCount');
+  const spinResetTimer = document.getElementById('spinResetTimer');
+  const spinPrizeModal = document.getElementById('spinPrizeModal');
+  const prizeModalIcon = document.getElementById('prizeModalIcon');
+  const prizeModalTitle = document.getElementById('prizeModalTitle');
+  const prizeModalDesc = document.getElementById('prizeModalDesc');
+  const closePrizeModalBtn = document.getElementById('closePrizeModalBtn');
+
+  let isWheelSpinning = false;
+  let currentWheelAngle = 0;
+
+  function drawWheel(angleOffset = 0) {
+    if (!wheelCanvas) return;
+    const ctx = wheelCanvas.getContext('2d');
+    const width = wheelCanvas.width;
+    const height = wheelCanvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = width / 2 - 10;
+    const numSlices = wheelSectors.length;
+    const arc = (2 * Math.PI) / numSlices;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw Outer Rim Glow
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 8, 0, 2 * Math.PI);
+    ctx.fillStyle = '#0e1526';
+    ctx.shadowColor = 'rgba(0, 229, 255, 0.4)';
+    ctx.shadowBlur = 15;
+    ctx.fill();
+    ctx.restore();
+
+    // Draw Slices
+    for (let i = 0; i < numSlices; i++) {
+      const slice = wheelSectors[i];
+      const startAngle = i * arc + angleOffset;
+      const endAngle = startAngle + arc;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.closePath();
+      ctx.fillStyle = slice.color;
+      ctx.fill();
+
+      // Border between slices
+      ctx.strokeStyle = '#070a12';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Text and Icons
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(startAngle + arc / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = slice.textCol;
+      ctx.font = 'bold 13px Outfit, sans-serif';
+      ctx.fillText(slice.label, radius - 18, 0);
+
+      ctx.font = 'bold 10px Outfit, sans-serif';
+      ctx.fillStyle = slice.textCol;
+      ctx.fillText(slice.sub, radius - 18, 14);
+      ctx.restore();
+
+      ctx.restore();
     }
 
-    let secondsLeft = 5;
-    if (closeAdModalBtn) closeAdModalBtn.style.display = 'none';
-    if (claimAdRewardBtn) claimAdRewardBtn.style.display = 'none';
-    if (adTimerFill) adTimerFill.style.width = '0%';
-    if (adCountdownText) adCountdownText.textContent = `${secondsLeft}s`;
+    // Outer Rim Pins
+    for (let i = 0; i < numSlices * 2; i++) {
+      const pinAngle = i * (Math.PI / numSlices) + angleOffset;
+      const px = centerX + (radius + 2) * Math.cos(pinAngle);
+      const py = centerY + (radius + 2) * Math.sin(pinAngle);
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fill();
+    }
+  }
 
-    rewardedAdModal.classList.add('active');
-    triggerHaptic('selection');
-
-    if (adInterval) clearInterval(adInterval);
-    adInterval = setInterval(() => {
-      secondsLeft -= 1;
-      const progressPct = ((5 - secondsLeft) / 5) * 100;
-      if (adTimerFill) adTimerFill.style.width = `${progressPct}%`;
-      if (adCountdownText) adCountdownText.textContent = `${secondsLeft}s`;
-
-      if (secondsLeft <= 0) {
-        clearInterval(adInterval);
-        adInterval = null;
-        if (adCountdownText) adCountdownText.textContent = 'Completed! ✅';
-        if (closeAdModalBtn) closeAdModalBtn.style.display = 'block';
-        if (claimAdRewardBtn) {
-          claimAdRewardBtn.style.display = 'block';
-          claimAdRewardBtn.innerHTML = `<span>🎉</span> Claim +${rewardAmount} $NASTA Coin`;
-        }
-        triggerHaptic('notification', 'success');
+  function updateArcadeUI() {
+    if (spinsAvailableCount) {
+      spinsAvailableCount.textContent = state.spinsAvailable || 0;
+    }
+    if (spinWheelBtn) {
+      const avail = state.spinsAvailable || 0;
+      if (avail > 0) {
+        spinWheelBtn.disabled = false;
+        spinWheelBtn.innerHTML = `<span>🎯</span> Spin the Wheel (${avail} Free)`;
+        spinWheelBtn.classList.remove('btn-disabled');
+      } else {
+        spinWheelBtn.disabled = false;
+        spinWheelBtn.innerHTML = `<span>🪙</span> Spin for 100 $NASTA`;
+        spinWheelBtn.classList.remove('btn-disabled');
       }
-    }, 1000);
-  }
+    }
 
-  if (closeAdModalBtn) {
-    closeAdModalBtn.addEventListener('click', () => {
-      if (rewardedAdModal) rewardedAdModal.classList.remove('active');
-      if (adInterval) clearInterval(adInterval);
-    });
-  }
-
-  if (claimAdRewardBtn) {
-    claimAdRewardBtn.addEventListener('click', () => {
-      state.balance += 5;
+    // 12-hour reset countdown
+    const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+    const now = Date.now();
+    const elapsed = now - (state.lastSpinResetTime || now);
+    if (elapsed >= TWELVE_HOURS_MS) {
+      state.spinsAvailable = 3;
+      state.lastSpinResetTime = now;
       saveState();
-      triggerHaptic('notification', 'success');
-      showToast('+5 $NASTA Coins Claimed! 📺', '🎉');
-      if (rewardedAdModal) rewardedAdModal.classList.remove('active');
-      updateUI();
+    }
+    const remainMs = Math.max(0, TWELVE_HOURS_MS - (now - (state.lastSpinResetTime || now)));
+    const hh = String(Math.floor(remainMs / 3600000)).padStart(2, '0');
+    const mm = String(Math.floor((remainMs % 3600000) / 60000)).padStart(2, '0');
+    const ss = String(Math.floor((remainMs % 60000) / 1000)).padStart(2, '0');
+    if (spinResetTimer) spinResetTimer.textContent = `${hh}:${mm}:${ss}`;
+  }
+
+  function spinWheel() {
+    if (isWheelSpinning) return;
+
+    // Check if free spin available or spend 100 $NASTA
+    if ((state.spinsAvailable || 0) <= 0) {
+      if (state.balance < 100) {
+        showToast('Need 100 $NASTA points to spin! Or watch a sponsor video.', '⚠️');
+        triggerHaptic('notification', 'warning');
+        return;
+      }
+      state.balance -= 100;
+      showToast('Spent 100 $NASTA for Fortune Spin! 🎯', '🪙');
+    } else {
+      state.spinsAvailable -= 1;
+    }
+
+    isWheelSpinning = true;
+    if (spinWheelBtn) spinWheelBtn.disabled = true;
+    triggerHaptic('impact', 'heavy');
+
+    const winningIndex = Math.floor(Math.random() * wheelSectors.length);
+    const winningSector = wheelSectors[winningIndex];
+
+    const numSlices = wheelSectors.length;
+    const arc = (2 * Math.PI) / numSlices;
+    const sliceCenterAngle = winningIndex * arc + arc / 2;
+    const extraRotations = (5 + Math.floor(Math.random() * 3)) * (2 * Math.PI);
+    const targetAngle = extraRotations + (1.5 * Math.PI - sliceCenterAngle);
+
+    const startTime = Date.now();
+    const spinDuration = 4000;
+    const startAngle = currentWheelAngle;
+
+    function animateWheel() {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / spinDuration);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+
+      currentWheelAngle = startAngle + (targetAngle - startAngle) * easeOut;
+      drawWheel(currentWheelAngle);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateWheel);
+      } else {
+        isWheelSpinning = false;
+        applyWheelPrize(winningSector);
+        updateArcadeUI();
+        updateUI();
+      }
+    }
+
+    requestAnimationFrame(animateWheel);
+  }
+
+  function applyWheelPrize(sector) {
+    triggerHaptic('notification', 'success');
+
+    if (sector.type === 'coins') {
+      state.balance += sector.amount;
+      showPrizeModal('🌟', `+${sector.amount} $NASTA Won!`, `You won +${sector.amount} $NASTA Points from the Lucky Wheel!`);
+    } else if (sector.type === 'energy') {
+      state.energy = state.maxEnergy;
+      state.cooldownEndTime = null;
+      showPrizeModal('⚡', 'Full Energy Refill!', `Your tap pool is instantly restored to 100% (${state.maxEnergy} Taps)!`);
+    } else if (sector.type === 'turbo') {
+      state.turboActive = true;
+      showPrizeModal('🔥', '2X Tap Booster Activated!', `Enjoy double earnings on every tap for the next 15 minutes!`);
+      setTimeout(() => {
+        state.turboActive = false;
+        updateUI();
+      }, 15 * 60 * 1000);
+    } else if (sector.type === 'ticket') {
+      state.spinsAvailable = (state.spinsAvailable || 0) + 1;
+      showPrizeModal('🎟️', 'Extra Free Spin Ticket!', `You won +1 free spin ticket! Spin again right now.`);
+    }
+
+    saveState();
+    updateUI();
+  }
+
+  function showPrizeModal(icon, title, desc) {
+    if (prizeModalIcon) prizeModalIcon.textContent = icon;
+    if (prizeModalTitle) prizeModalTitle.textContent = title;
+    if (prizeModalDesc) prizeModalDesc.textContent = desc;
+    if (spinPrizeModal) spinPrizeModal.classList.add('active');
+  }
+
+  if (closePrizeModalBtn) {
+    closePrizeModalBtn.addEventListener('click', () => {
+      if (spinPrizeModal) spinPrizeModal.classList.remove('active');
     });
   }
 
-  const watchAdQuickBtn = document.getElementById('watchAdQuickBtn');
-  if (watchAdQuickBtn) {
-    watchAdQuickBtn.addEventListener('click', () => {
-      showRewardedAdFlow(5);
+  // Wheel Buttons
+  if (spinWheelBtn) spinWheelBtn.addEventListener('click', spinWheel);
+  if (wheelCenterSpinBtn) wheelCenterSpinBtn.addEventListener('click', spinWheel);
+
+  if (buySpinCoinBtn) {
+    buySpinCoinBtn.addEventListener('click', () => {
+      if (state.balance < 100) {
+        showToast('Insufficient $NASTA points! Tap coin to earn more.', '⚠️');
+        return;
+      }
+      state.balance -= 100;
+      state.spinsAvailable = (state.spinsAvailable || 0) + 1;
+      saveState();
+      updateArcadeUI();
+      updateUI();
+      showToast('Purchased +1 Spin Ticket with 100 $NASTA! 🎟️', '🎉');
+      triggerHaptic('notification', 'success');
     });
+  }
+
+  if (watchAdSpinBtn) {
+    watchAdSpinBtn.addEventListener('click', () => {
+      showRewardedAdFlow(() => {
+        state.spinsAvailable = (state.spinsAvailable || 0) + 1;
+        saveState();
+        updateArcadeUI();
+        showToast('🎟️ +1 Free Spin Ticket Earned from Sponsor Video!', '🎉');
+      }, 'wheel_ticket');
+    });
+  }
+
+  // Initial Wheel Canvas Render
+  setTimeout(() => {
+    drawWheel(0);
+    updateArcadeUI();
+    renderHardwareUpgrades();
+    checkOfflineEarnings();
+  }, 200);
+
+  // Periodic Arcade Timer Ticker
+  setInterval(updateArcadeUI, 1000);
+
+  // ===================================================================
+  // 3. AUTO-MINING BOT OFFLINE EARNINGS CHECK
+  // ===================================================================
+  function checkOfflineEarnings() {
+    const botLvl = state.autoBotLevel || 0;
+    if (botLvl <= 0) return;
+
+    const now = Date.now();
+    const lastCheck = state.lastOfflineCheck || now;
+    const elapsedMs = now - lastCheck;
+    if (elapsedMs < 60000) return; // Under 1 minute
+
+    const maxHours = botLvl;
+    const maxOfflineMs = maxHours * 3600 * 1000;
+    const effectiveMs = Math.min(elapsedMs, maxOfflineMs);
+    const minutes = Math.floor(effectiveMs / 60000);
+    const coinsEarned = Math.floor(minutes * (botLvl * 6));
+
+    if (coinsEarned > 0) {
+      const offlineModal = document.getElementById('offlineEarningsModal');
+      const offlineTokensEl = document.getElementById('offlineEarnedTokens');
+      const claimBtn = document.getElementById('claimOfflineEarnedBtn');
+
+      if (offlineTokensEl) offlineTokensEl.textContent = formatNumber(coinsEarned);
+      if (offlineModal) offlineModal.classList.add('active');
+
+      if (claimBtn) {
+        claimBtn.onclick = () => {
+          state.balance += coinsEarned;
+          state.lastOfflineCheck = Date.now();
+          saveState();
+          updateUI();
+          if (offlineModal) offlineModal.classList.remove('active');
+          showToast(`Claimed +${formatNumber(coinsEarned)} $NASTA from Auto-Bot! 🤖`, '🎉');
+          triggerHaptic('notification', 'success');
+        };
+      }
+    }
+    state.lastOfflineCheck = now;
   }
 
   // --- Referral Sharing ---
