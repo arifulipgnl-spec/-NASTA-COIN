@@ -283,6 +283,15 @@
       action: 'streak'
     },
     {
+      id: 'task_youtube',
+      title: 'Subscribe to NASTA YouTube',
+      desc: 'Watch & subscribe to the official NASTA YouTube channel.',
+      reward: 500,
+      icon: '▶️',
+      action: 'link',
+      link: 'https://www.youtube.com/@nastacoin'
+    },
+    {
       id: 'task_spin',
       title: 'Lucky Wheel Challenger',
       desc: 'Spin the Fortune Wheel in the Arcade today.',
@@ -1156,6 +1165,11 @@
         isDone = false;
         btnLabel = 'Watch 📺';
         btnDisabled = false;
+      } else if (task.action === 'link') {
+        if (!isDone) {
+          btnLabel = task.id === 'task_youtube' ? 'Subscribe ▶️' : 'Start ↗';
+          btnDisabled = false;
+        }
       }
 
       const card = document.createElement('div');
@@ -1166,6 +1180,7 @@
         <div class="task-info">
           <div class="task-title">${task.title}</div>
           <div class="task-desc">${task.desc}</div>
+          <div class="task-reward">+${Number(task.reward).toLocaleString()} $NASTA</div>
         </div>
         <button class="btn btn-sm ${isDone ? 'btn-outline' : 'btn-primary'} task-claim-btn" data-task-id="${task.id}" ${btnDisabled ? 'disabled' : ''}>
           ${btnLabel}
@@ -1204,9 +1219,13 @@
       const walletModal = document.getElementById('walletSelectModal');
       if (walletModal) walletModal.classList.add('active');
     } else if (task.action === 'link' && task.link) {
-      if (tg?.openLink) {
-        tg.openLink(task.link);
-      } else {
+      try {
+        if (tg && typeof tg.openLink === 'function') {
+          tg.openLink(task.link);
+        } else {
+          window.open(task.link, '_blank');
+        }
+      } catch (err) {
         window.open(task.link, '_blank');
       }
     }
